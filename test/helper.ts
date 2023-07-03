@@ -2,6 +2,9 @@ import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/src/signers";
 import hre, {ethers} from "hardhat";
 import {IMPERSONATE_ACCOUNT, RICH_DAI_ACCOUNT, RICH_ETH_ACCOUNT} from "./constants";
 import {parseEther} from "ethers";
+import {AaveV3ArbitrumAssets_DAI_UNDERLYING} from "./AaveV3ArbitrumAssetsConstants";
+import WETHArtifact from "@aave/core-v3/artifacts/contracts/dependencies/weth/WETH9.sol/WETH9.json";
+
 
 export async function send10ETH(address: string) {
     const richSigner = await getImpersonateAccount(RICH_ETH_ACCOUNT);
@@ -9,8 +12,17 @@ export async function send10ETH(address: string) {
     await txResp.wait();
 }
 
-export async function sendWETHToAccount() {
+export async function send100DAI(address: string) {
+    const signer = await getImpersonateAccount(RICH_DAI_ACCOUNT);
+    const dai = new ethers.Contract(AaveV3ArbitrumAssets_DAI_UNDERLYING, WETHArtifact.abi, signer);
+    const txResp = await dai.transfer(address, parseEther('100'));
+    await txResp.wait();
+}
 
+export async function daiBalance(address: string): Promise<bigint> {
+    const signer = await getImpersonateAccount(RICH_DAI_ACCOUNT);
+    const dai = new ethers.Contract(AaveV3ArbitrumAssets_DAI_UNDERLYING, WETHArtifact.abi, signer);
+    return dai.balanceOf(address);
 }
 
 export async function getEtherBalance(address: string): Promise<string> {

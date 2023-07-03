@@ -16,7 +16,7 @@ import {
 import {DataTypes} from "@aave/core-v3/dist/types/types/protocol/pool/Pool";
 import {formatUnits, parseEther, parseUnits} from "ethers";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/src/signers";
-import {getEtherBalance, getImpersonateAccount, send10ETH} from "./helper";
+import {getEtherBalance, getImpersonateAccount, send100DAI, send10ETH, daiBalance} from "./helper";
 import {IMPERSONATE_ACCOUNT} from "./constants";
 
 describe("AAVE", function () {
@@ -57,6 +57,12 @@ describe("AAVE", function () {
             await send10ETH(IMPERSONATE_ACCOUNT);
             const balance = await getEtherBalance(IMPERSONATE_ACCOUNT);
             console.log(`balance:${balance}`);
+        });
+
+        it("send dai", async function () {
+            await send100DAI(IMPERSONATE_ACCOUNT);
+            const daiBalance = await daiBalance(IMPERSONATE_ACCOUNT);
+            console.log(`balance:${daiBalance}`);
         });
     });
 
