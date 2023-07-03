@@ -37,6 +37,8 @@
     "typescript": "^5.1.6"
   },
   "dependencies": {
+    "@aave/core-v3": "^1.17.2",
+    "@bgd-labs/aave-address-book": "^1.26.2",
     "ts-mocha": "^10.0.0"
   }
 }

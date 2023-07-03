@@ -1,29 +1,22 @@
 import {
-    time,
     loadFixture,
 } from "@nomicfoundation/hardhat-toolbox/network-helpers";
-import {anyValue} from "@nomicfoundation/hardhat-chai-matchers/withArgs";
-import {expect} from "chai";
 import {ethers} from "hardhat";
 import hre from "hardhat";
-import {defaultSolcOutputSelection} from "hardhat/internal/core/config/default-config";
+import PoolV3Artifact from "@aave/core-v3/artifacts/contracts/protocol/pool/Pool.sol/Pool.json";
+import {POOL} from "./AaveV3ArbitrumConstants"
 
 describe("AAVE", function () {
 
     async function deployAAVEProtocolFixture() {
-        const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-        const ONE_GWEI = 1_000_000_000;
-
-        const lockedAmount = ONE_GWEI;
-        const unlockTime = (await time.latest()) + ONE_YEAR_IN_SECS;
-
-        // Contracts are deployed using the first signer/account by default
-        const [owner, otherAccount] = await ethers.getSigners();
-
-        const Lock = await ethers.getContractFactory("Lock");
-        const lock = await Lock.deploy(unlockTime, {value: lockedAmount});
-
-        return {lock, unlockTime, lockedAmount, owner, otherAccount};
+        const mockAccount = '0xebb17ec2bce083605a9a665cbd905ece11e5498a';
+        await hre.network.provider.request({
+            method: "hardhat_impersonateAccount",
+            params: [mockAccount]
+        });
+        const signer = await ethers.provider.getSigner(mockAccount);
+        const pool = new ethers.Contract(POOL, PoolV3Artifact.abi, signer);
+        return {pool};
     }
 
     describe("Before Test", function () {
@@ -54,7 +47,7 @@ describe("AAVE", function () {
 
     describe("supply logic", function () {
         it("supply", async function () {
-            const {aave} = await loadFixture(deployAAVEProtocolFixture);
+            const {pool} = await loadFixture(deployAAVEProtocolFixture);
         });
     });
 });
