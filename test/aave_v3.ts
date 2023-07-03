@@ -4,6 +4,7 @@ import {
 import {ethers} from "hardhat";
 import hre from "hardhat";
 import PoolV3Artifact from "@aave/core-v3/artifacts/contracts/protocol/pool/Pool.sol/Pool.json";
+// import { AaveV2Avalanche } from "@bgd-labs/aave-address-book";   // Unknown file extension ".ts"
 import {POOL} from "./AaveV3ArbitrumConstants"
 
 describe("AAVE", function () {
