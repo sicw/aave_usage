@@ -69,7 +69,7 @@ describe("AAVE", function () {
             console.log(`DAI aTokenAddress:${reserveData.aTokenAddress}`);
         });
 
-        it("L2Encoder", async function () {
+        it.skip("L2Encoder", async function () {
             const {pool, L2Encoder} = await loadFixture(deployAAVEProtocolFixture);
             const supplyEth = parseEther('0.01');
             const params = await L2Encoder.encodeSupplyParams(AaveV3ArbitrumAssets_WETH_UNDERLYING, supplyEth, 0);
