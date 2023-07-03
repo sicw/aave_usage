@@ -29,9 +29,7 @@ describe("AAVE", function () {
         const result = {
             pool,
             l2pool,
-            L2Encoder,
-            signer,
-            mockAccount:IMPERSONATE_ACCOUNT
+            L2Encoder
         };
         return result;
     }
@@ -43,18 +41,16 @@ describe("AAVE", function () {
         });
 
         it("account balance", async function () {
-            const {mockAccount} = await loadFixture(deployAAVEProtocolFixture);
-            const balance = await ethers.provider.getBalance(mockAccount);
+            const balance = await ethers.provider.getBalance(IMPERSONATE_ACCOUNT);
             console.log(`balance:${ethers.formatEther(balance)}`);
         });
 
         it("Impersonate Account", async function () {
-            const {mockAccount} = await loadFixture(deployAAVEProtocolFixture);
             await hre.network.provider.request({
                 method: "hardhat_impersonateAccount",
-                params: [mockAccount]
+                params: [IMPERSONATE_ACCOUNT]
             });
-            const signer = await ethers.provider.getSigner(mockAccount);
+            const signer = await ethers.provider.getSigner(IMPERSONATE_ACCOUNT);
             const address = await signer.getAddress();
             console.log(`impersonate account address:${address}`);
             const nonce = await signer.getNonce();

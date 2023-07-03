@@ -16,11 +16,11 @@ export async function sendWETHToAccount() {
 
 }
 
-export async function impersonateAccount() {
+export async function impersonateAccounts() {
     await hre.network.provider.request({
         method: "hardhat_impersonateAccount",
         params: [IMPERSONATE_ACCOUNT, RICH_ETH_ACCOUNT, RICH_DAI_ACCOUNT]
     });
 }
 
-impersonateAccount();
+impersonateAccounts();
