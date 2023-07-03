@@ -6,6 +6,7 @@ import hre from "hardhat";
 import PoolV3Artifact from "@aave/core-v3/artifacts/contracts/protocol/pool/Pool.sol/Pool.json";
 // import { AaveV2Avalanche } from "@bgd-labs/aave-address-book";   // Unknown file extension ".ts"
 import {POOL} from "./AaveV3ArbitrumConstants"
+import {AaveV3ArbitrumAssets_DAI_UNDERLYING} from "./AaveV3ArbitrumAssetsConstants"
 
 describe("AAVE", function () {
 
@@ -17,10 +18,10 @@ describe("AAVE", function () {
         });
         const signer = await ethers.provider.getSigner(mockAccount);
         const pool = new ethers.Contract(POOL, PoolV3Artifact.abi, signer);
-        return {pool};
+        return {pool, signer};
     }
 
-    describe("Before Test", function () {
+    describe.skip("Before Test", function () {
         it("block number", async function () {
             const blockNum = await ethers.provider.getBlockNumber();
             console.log(`blockNum:${blockNum}`)
@@ -47,8 +48,10 @@ describe("AAVE", function () {
     });
 
     describe("supply logic", function () {
-        it("supply", async function () {
+        it.skip("getReserveData", async function () {
             const {pool} = await loadFixture(deployAAVEProtocolFixture);
+            const reserveData = await pool.getReserveData(AaveV3ArbitrumAssets_DAI_UNDERLYING);
+            console.log(reserveData);
         });
     });
 });
