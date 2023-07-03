@@ -16,7 +16,7 @@ import {
 import {DataTypes} from "@aave/core-v3/dist/types/types/protocol/pool/Pool";
 import {formatUnits, parseEther, parseUnits} from "ethers";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/src/signers";
-import {getImpersonateAccount} from "./helper";
+import {getEtherBalance, getImpersonateAccount, send10ETH} from "./helper";
 import {IMPERSONATE_ACCOUNT} from "./constants";
 
 describe("AAVE", function () {
@@ -34,27 +34,29 @@ describe("AAVE", function () {
         return result;
     }
 
-    describe.skip("Before Test", function () {
+    describe("Before Test", function () {
         it("block number", async function () {
             const blockNum = await ethers.provider.getBlockNumber();
             console.log(`blockNum:${blockNum}`)
         });
 
         it("account balance", async function () {
-            const balance = await ethers.provider.getBalance(IMPERSONATE_ACCOUNT);
-            console.log(`balance:${ethers.formatEther(balance)}`);
+            const balance = await getEtherBalance(IMPERSONATE_ACCOUNT);
+            console.log(`balance:${balance}`);
         });
 
         it("Impersonate Account", async function () {
-            await hre.network.provider.request({
-                method: "hardhat_impersonateAccount",
-                params: [IMPERSONATE_ACCOUNT]
-            });
-            const signer = await ethers.provider.getSigner(IMPERSONATE_ACCOUNT);
+            const signer = await getImpersonateAccount(IMPERSONATE_ACCOUNT);
             const address = await signer.getAddress();
             console.log(`impersonate account address:${address}`);
             const nonce = await signer.getNonce();
             console.log(`impersonate account nonce:${nonce}`)
+        });
+
+        it("send eth", async function () {
+            await send10ETH(IMPERSONATE_ACCOUNT);
+            const balance = await getEtherBalance(IMPERSONATE_ACCOUNT);
+            console.log(`balance:${balance}`);
         });
     });
 
