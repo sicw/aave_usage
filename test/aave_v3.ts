@@ -14,21 +14,26 @@ import {
     AaveV3ArbitrumAssets_WETH_UNDERLYING
 } from "./AaveV3ArbitrumAssetsConstants"
 import {DataTypes} from "@aave/core-v3/dist/types/types/protocol/pool/Pool";
-import {formatUnits, parseEther} from "ethers";
+import {formatUnits, parseEther, parseUnits} from "ethers";
+import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/src/signers";
+import {getImpersonateAccount} from "./helper";
+import {IMPERSONATE_ACCOUNT} from "./constants";
 
 describe("AAVE", function () {
 
     async function deployAAVEProtocolFixture() {
-        const mockAccount = '0xebb17ec2bce083605a9a665cbd905ece11e5498a';
-        await hre.network.provider.request({
-            method: "hardhat_impersonateAccount",
-            params: [mockAccount]
-        });
-        const signer = await ethers.provider.getSigner(mockAccount);
+        const signer = await getImpersonateAccount(IMPERSONATE_ACCOUNT);
         const pool = new ethers.Contract(POOL, PoolV3Artifact.abi, signer);
         const l2pool = new ethers.Contract(POOL, L2PoolV3Artifact.abi, signer);
         const L2Encoder = new ethers.Contract(L2_ENCODER, L2EncoderV3Artifact.abi, signer);
-        return {pool, l2pool, L2Encoder, signer};
+        const result = {
+            pool,
+            l2pool,
+            L2Encoder,
+            signer,
+            mockAccount:IMPERSONATE_ACCOUNT
+        };
+        return result;
     }
 
     describe.skip("Before Test", function () {
@@ -38,13 +43,13 @@ describe("AAVE", function () {
         });
 
         it("account balance", async function () {
-            const account = '0xebb17ec2bce083605a9a665cbd905ece11e5498a';
-            const balance = await ethers.provider.getBalance(account);
+            const {mockAccount} = await loadFixture(deployAAVEProtocolFixture);
+            const balance = await ethers.provider.getBalance(mockAccount);
             console.log(`balance:${ethers.formatEther(balance)}`);
         });
 
         it("Impersonate Account", async function () {
-            const mockAccount = '0xebb17ec2bce083605a9a665cbd905ece11e5498a';
+            const {mockAccount} = await loadFixture(deployAAVEProtocolFixture);
             await hre.network.provider.request({
                 method: "hardhat_impersonateAccount",
                 params: [mockAccount]
@@ -64,14 +69,14 @@ describe("AAVE", function () {
             console.log(`DAI aTokenAddress:${reserveData.aTokenAddress}`);
         });
 
-        it.skip("L2Encoder", async function () {
+        it("L2Encoder", async function () {
             const {pool, L2Encoder} = await loadFixture(deployAAVEProtocolFixture);
             const supplyEth = parseEther('0.01');
             const params = await L2Encoder.encodeSupplyParams(AaveV3ArbitrumAssets_WETH_UNDERLYING, supplyEth, 0);
             console.log(`params:${params}`);
         });
 
-        it("supply", async function () {
+        it.skip("supply", async function () {
             const {l2pool, L2Encoder} = await loadFixture(deployAAVEProtocolFixture);
             const supplyEth = parseEther('0.01');
             const params = await L2Encoder.encodeSupplyParams(AaveV3ArbitrumAssets_MAI_UNDERLYING, supplyEth, 0);
