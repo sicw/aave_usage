@@ -26,15 +26,14 @@ describe("AAVE", function () {
         const pool = new ethers.Contract(POOL, PoolV3Artifact.abi, signer);
         const l2pool = new ethers.Contract(POOL, L2PoolV3Artifact.abi, signer);
         const L2Encoder = new ethers.Contract(L2_ENCODER, L2EncoderV3Artifact.abi, signer);
-        const result = {
+        return {
             pool,
             l2pool,
             L2Encoder
         };
-        return result;
     }
 
-    describe("Before Test", function () {
+    describe.skip("Before Test", function () {
         it("block number", async function () {
             const blockNum = await ethers.provider.getBlockNumber();
             console.log(`blockNum:${blockNum}`)
@@ -81,10 +80,16 @@ describe("AAVE", function () {
             console.log(`params:${params}`);
         });
 
-        it.skip("supply", async function () {
+        it("supply", async function () {
             const {l2pool, L2Encoder} = await loadFixture(deployAAVEProtocolFixture);
-            const supplyEth = parseEther('0.01');
-            const params = await L2Encoder.encodeSupplyParams(AaveV3ArbitrumAssets_MAI_UNDERLYING, supplyEth, 0);
+
+            // 给仿冒账户充值
+            await send10ETH(IMPERSONATE_ACCOUNT);
+            await send10ETH(RICH_DAI_ACCOUNT);
+            await send100DAI(IMPERSONATE_ACCOUNT);
+
+            const supplyEth = parseEther('3');
+            const params = await L2Encoder.encodeSupplyParams(AaveV3ArbitrumAssets_DAI_UNDERLYING, supplyEth, 0);
             const resp = await l2pool.supply(params);
             console.log(`supply:${JSON.stringify(resp)}`);
         });
