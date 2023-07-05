@@ -25,7 +25,7 @@ import {
 import {
     send100DAI,
     getDaiBalance,
-    approve50DAI, getAllowance
+    approve50DAI, getAllowance, approveL2Pool50DAI
 } from "./DaiHelper";
 import {IMPERSONATE_ACCOUNT, RICH_DAI_ACCOUNT} from "./constants";
 import {getBalances} from "@nomicfoundation/hardhat-chai-matchers/internal/misc/balance";
@@ -118,12 +118,14 @@ describe("AAVE", function () {
             await send10ETH(IMPERSONATE_ACCOUNT);
             await send10ETH(RICH_DAI_ACCOUNT);
             await send100DAI(IMPERSONATE_ACCOUNT);
-            await approve50DAI();
+            await approveL2Pool50DAI();
 
-            const supplyEth = parseEther('10');
-            const params = await L2Encoder.encodeSupplyParams(AaveV3ArbitrumAssets_DAI_UNDERLYING, supplyEth, 0);
-            const resp = await l2pool.supply(params);
-            console.log(`supply:${JSON.stringify(resp)}`);
+            const supplyDAI = parseEther('10');
+            // const params = await L2Encoder.encodeSupplyParams(AaveV3ArbitrumAssets_DAI_UNDERLYING, supplyDAI, 0);
+            // const resp = await l2pool.supply(params);
+            const supplyResp = await l2pool.supply(AaveV3ArbitrumAssets_DAI_UNDERLYING, supplyDAI, IMPERSONATE_ACCOUNT, 0);
+            await supplyResp.wait();
+            console.log(`supply:${JSON.stringify(supplyResp)}`);
         });
     });
 });
