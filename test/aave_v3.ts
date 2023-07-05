@@ -9,6 +9,7 @@ import L2EncoderV3Artifact from "@aave/core-v3/artifacts/contracts/misc/L2Encode
 // import { AaveV2Avalanche } from "@bgd-labs/aave-address-book";   // Unknown file extension ".ts"
 import {POOL, L2_ENCODER} from "./AaveV3ArbitrumConstants"
 import {
+    AaveV3ArbitrumAssets_DAI_A_TOKEN,
     AaveV3ArbitrumAssets_DAI_UNDERLYING,
     AaveV3ArbitrumAssets_MAI_UNDERLYING,
     AaveV3ArbitrumAssets_WETH_UNDERLYING
@@ -16,18 +17,22 @@ import {
 import {DataTypes} from "@aave/core-v3/dist/types/types/protocol/pool/Pool";
 import {formatUnits, parseEther, parseUnits} from "ethers";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/src/signers";
-import {getEtherBalance, getImpersonateAccount, send100DAI, send10ETH, getDaiBalance} from "./helper";
+import {
+    getEtherBalance,
+    getImpersonateAccount,
+    send10ETH,
+} from "./Helper";
+import {
+    send100DAI,
+    getDaiBalance,
+    approve50DAI, getAllowance
+} from "./DaiHelper";
 import {IMPERSONATE_ACCOUNT, RICH_DAI_ACCOUNT} from "./constants";
+import {getBalances} from "@nomicfoundation/hardhat-chai-matchers/internal/misc/balance";
 
 describe("AAVE", function () {
 
     async function deployAAVEProtocolFixture() {
-
-        // 给仿冒账户充值
-        await send10ETH(IMPERSONATE_ACCOUNT);
-        await send10ETH(RICH_DAI_ACCOUNT);
-        await send100DAI(IMPERSONATE_ACCOUNT);
-
         const ethBalance = await getEtherBalance(IMPERSONATE_ACCOUNT);
         console.log(`eth balance:${ethBalance}`);
         const daiBalance = await getDaiBalance(IMPERSONATE_ACCOUNT);
@@ -91,9 +96,36 @@ describe("AAVE", function () {
             console.log(`params:${params}`);
         });
 
+        it.skip("inc coin", async function () {
+            // 给仿冒账户充值
+            await send10ETH(IMPERSONATE_ACCOUNT);
+            await send10ETH(RICH_DAI_ACCOUNT);
+            await send100DAI(IMPERSONATE_ACCOUNT);
+            await approve50DAI();
+
+            let ethBalance = await getEtherBalance(IMPERSONATE_ACCOUNT);
+            console.log(`${IMPERSONATE_ACCOUNT} eth balance:${ethBalance}`);
+
+            ethBalance = await getEtherBalance(RICH_DAI_ACCOUNT);
+            console.log(`${RICH_DAI_ACCOUNT} eth balance:${ethBalance}`);
+
+            let daiBalance = await getDaiBalance(IMPERSONATE_ACCOUNT);
+            console.log(`${IMPERSONATE_ACCOUNT} dai balance:${daiBalance}`);
+
+            const allowance = await getAllowance(IMPERSONATE_ACCOUNT, AaveV3ArbitrumAssets_DAI_A_TOKEN);
+            console.log(`allowance:${allowance}`);
+        });
+
         it("supply", async function () {
             const {l2pool, L2Encoder} = await loadFixture(deployAAVEProtocolFixture);
-            const supplyEth = parseEther('3');
+
+            // 给仿冒账户充值
+            await send10ETH(IMPERSONATE_ACCOUNT);
+            await send10ETH(RICH_DAI_ACCOUNT);
+            await send100DAI(IMPERSONATE_ACCOUNT);
+            await approve50DAI();
+
+            const supplyEth = parseEther('10');
             const params = await L2Encoder.encodeSupplyParams(AaveV3ArbitrumAssets_DAI_UNDERLYING, supplyEth, 0);
             const resp = await l2pool.supply(params);
             console.log(`supply:${JSON.stringify(resp)}`);
