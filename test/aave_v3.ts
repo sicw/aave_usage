@@ -33,11 +33,6 @@ import {getBalances} from "@nomicfoundation/hardhat-chai-matchers/internal/misc/
 describe("AAVE", function () {
 
     async function deployAAVEProtocolFixture() {
-        const ethBalance = await getEtherBalance(IMPERSONATE_ACCOUNT);
-        console.log(`eth balance:${ethBalance}`);
-        const daiBalance = await getDaiBalance(IMPERSONATE_ACCOUNT);
-        console.log(`dai balance:${daiBalance}`);
-
         const signer = await getImpersonateAccount(IMPERSONATE_ACCOUNT);
         const pool = new ethers.Contract(POOL, PoolV3Artifact.abi, signer);
         const l2pool = new ethers.Contract(POOL, L2PoolV3Artifact.abi, signer);
