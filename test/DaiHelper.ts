@@ -18,6 +18,7 @@ export async function approveL2Pool50DAI() {
     const dai = new ethers.Contract(AaveV3ArbitrumAssets_DAI_UNDERLYING, WETHArtifact.abi, signer);
     // 注意这里approve的是POOL池子, 不是aToken
     const txResp = await dai.approve(POOL, parseEther('50'));
+    // 等待区块确认(默认等待1个)
     await txResp.wait();
 }
 

@@ -122,10 +122,11 @@ describe("AAVE", function () {
 
             const supplyDAI = parseEther('10');
             // const params = await L2Encoder.encodeSupplyParams(AaveV3ArbitrumAssets_DAI_UNDERLYING, supplyDAI, 0);
-            // const resp = await l2pool.supply(params);
+            // const supplyResp = await l2pool.supply(params);
+            // await supplyResp.wait();
             const supplyResp = await l2pool.supply(AaveV3ArbitrumAssets_DAI_UNDERLYING, supplyDAI, IMPERSONATE_ACCOUNT, 0);
             await supplyResp.wait();
-            console.log(`supply:${JSON.stringify(supplyResp)}`);
+            console.log(`supply:${JSON.stringify(supplyResp.blockHash)}`);
         });
     });
 });
