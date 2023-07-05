@@ -16,6 +16,7 @@ export async function send100DAI(address: string) {
 export async function approveL2Pool50DAI() {
     const signer = await getImpersonateAccount(IMPERSONATE_ACCOUNT);
     const dai = new ethers.Contract(AaveV3ArbitrumAssets_DAI_UNDERLYING, WETHArtifact.abi, signer);
+    // 注意这里approve的是POOL池子, 不是aToken
     const txResp = await dai.approve(POOL, parseEther('50'));
     await txResp.wait();
 }
