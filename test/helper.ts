@@ -19,7 +19,7 @@ export async function send100DAI(address: string) {
     await txResp.wait();
 }
 
-export async function daiBalance(address: string): Promise<string> {
+export async function getDaiBalance(address: string): Promise<string> {
     const signer = await getImpersonateAccount(RICH_DAI_ACCOUNT);
     const dai = new ethers.Contract(AaveV3ArbitrumAssets_DAI_UNDERLYING, WETHArtifact.abi, signer);
     return Promise.resolve(ethers.formatEther(await dai.balanceOf(address)));

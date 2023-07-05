@@ -16,12 +16,23 @@ import {
 import {DataTypes} from "@aave/core-v3/dist/types/types/protocol/pool/Pool";
 import {formatUnits, parseEther, parseUnits} from "ethers";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/src/signers";
-import {getEtherBalance, getImpersonateAccount, send100DAI, send10ETH, daiBalance} from "./helper";
+import {getEtherBalance, getImpersonateAccount, send100DAI, send10ETH, getDaiBalance} from "./helper";
 import {IMPERSONATE_ACCOUNT, RICH_DAI_ACCOUNT} from "./constants";
 
 describe("AAVE", function () {
 
     async function deployAAVEProtocolFixture() {
+
+        // 给仿冒账户充值
+        await send10ETH(IMPERSONATE_ACCOUNT);
+        await send10ETH(RICH_DAI_ACCOUNT);
+        await send100DAI(IMPERSONATE_ACCOUNT);
+
+        const ethBalance = await getEtherBalance(IMPERSONATE_ACCOUNT);
+        console.log(`eth balance:${ethBalance}`);
+        const daiBalance = await getDaiBalance(IMPERSONATE_ACCOUNT);
+        console.log(`dai balance:${daiBalance}`);
+
         const signer = await getImpersonateAccount(IMPERSONATE_ACCOUNT);
         const pool = new ethers.Contract(POOL, PoolV3Artifact.abi, signer);
         const l2pool = new ethers.Contract(POOL, L2PoolV3Artifact.abi, signer);
@@ -61,7 +72,7 @@ describe("AAVE", function () {
         it("send dai", async function () {
             await send10ETH(RICH_DAI_ACCOUNT);
             await send100DAI(IMPERSONATE_ACCOUNT);
-            const balance = await daiBalance(IMPERSONATE_ACCOUNT);
+            const balance = await getDaiBalance(IMPERSONATE_ACCOUNT);
             console.log(`dai balance:${balance}`);
         });
     });
@@ -82,12 +93,6 @@ describe("AAVE", function () {
 
         it("supply", async function () {
             const {l2pool, L2Encoder} = await loadFixture(deployAAVEProtocolFixture);
-
-            // 给仿冒账户充值
-            await send10ETH(IMPERSONATE_ACCOUNT);
-            await send10ETH(RICH_DAI_ACCOUNT);
-            await send100DAI(IMPERSONATE_ACCOUNT);
-
             const supplyEth = parseEther('3');
             const params = await L2Encoder.encodeSupplyParams(AaveV3ArbitrumAssets_DAI_UNDERLYING, supplyEth, 0);
             const resp = await l2pool.supply(params);
