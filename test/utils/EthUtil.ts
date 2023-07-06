@@ -1,10 +1,10 @@
 import {ethers} from "hardhat";
 import {parseEther} from "ethers";
-import {getImpersonateAccount} from "./AccountUtils";
+import {AccountUtil} from "./AccountUtil";
 
-export class EthHelper {
+export class EthUtil {
     static async transfer(from: string, to: string, amount: number) {
-        const richSigner = await getImpersonateAccount(from);
+        const richSigner = await AccountUtil.getImpersonateAccount(from);
         const txResp = await richSigner.sendTransaction({to: to, value: parseEther(String(amount))});
         await txResp.wait();
     }

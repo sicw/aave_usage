@@ -2,18 +2,18 @@ import {ethers} from "hardhat";
 import {parseEther} from "ethers";
 import ERC20Artifact
     from "@aave/core-v3/artifacts/contracts/dependencies/openzeppelin/contracts/IERC20.sol/IERC20.json";
-import {getImpersonateAccount} from "./AccountUtils";
+import {AccountUtil} from "./AccountUtil";
 
-export class Erc20Helper {
+export class Erc20Util {
     static async transfer(coin: string, from: string, to: string, amount: number) {
-        const signer = await getImpersonateAccount(from);
+        const signer = await AccountUtil.getImpersonateAccount(from);
         const erc20Contract = new ethers.Contract(coin, ERC20Artifact.abi, signer);
         const txResp = await erc20Contract.transfer(to, parseEther(String(amount)));
         await txResp.wait();
     }
 
     static async approve(coin: string, from: string, to: string, amount: number) {
-        const signer = await getImpersonateAccount(from);
+        const signer = await AccountUtil.getImpersonateAccount(from);
         const erc20Contract = new ethers.Contract(coin, ERC20Artifact.abi, signer);
         // 注意这里approve的是POOL池子, 不是aToken
         const txResp = await erc20Contract.approve(to, parseEther(String(amount)));

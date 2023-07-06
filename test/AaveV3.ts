@@ -12,15 +12,15 @@ import {
 } from "./AaveV3ArbitrumAssetsConstants"
 import {DataTypes} from "@aave/core-v3/dist/types/types/protocol/pool/Pool";
 import {parseEther} from "ethers";
-import {EthHelper,} from "./EthHelper";
+import {EthUtil,} from "./utils/EthUtil";
 import {IMPERSONATE_ACCOUNT, RICH_DAI_ACCOUNT, RICH_ETH_ACCOUNT} from "./Constants";
-import {getImpersonateAccount} from "./AccountUtils";
-import {Erc20Helper} from "./Erc20Helper";
+import {AccountUtil} from "./utils/AccountUtil";
+import {Erc20Util} from "./utils/Erc20Util";
 
 describe("AAVE", function () {
 
     async function deployAAVEProtocolFixture() {
-        const signer = await getImpersonateAccount(IMPERSONATE_ACCOUNT);
+        const signer = await AccountUtil.getImpersonateAccount(IMPERSONATE_ACCOUNT);
         const pool = new ethers.Contract(POOL, PoolV3Artifact.abi, signer);
         const l2pool = new ethers.Contract(POOL, L2PoolV3Artifact.abi, signer);
         const L2Encoder = new ethers.Contract(L2_ENCODER, L2EncoderV3Artifact.abi, signer);
@@ -38,12 +38,12 @@ describe("AAVE", function () {
         });
 
         it("account balance", async function () {
-            const balance = await EthHelper.getBalance(IMPERSONATE_ACCOUNT);
+            const balance = await EthUtil.getBalance(IMPERSONATE_ACCOUNT);
             console.log(`balance:${balance}`);
         });
 
         it("Impersonate Account", async function () {
-            const signer = await getImpersonateAccount(IMPERSONATE_ACCOUNT);
+            const signer = await AccountUtil.getImpersonateAccount(IMPERSONATE_ACCOUNT);
             const address = await signer.getAddress();
             console.log(`impersonate account address:${address}`);
             const nonce = await signer.getNonce();
@@ -51,15 +51,15 @@ describe("AAVE", function () {
         });
 
         it("send eth", async function () {
-            await EthHelper.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT, 10);
-            const balance = await EthHelper.getBalance(IMPERSONATE_ACCOUNT);
+            await EthUtil.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT, 10);
+            const balance = await EthUtil.getBalance(IMPERSONATE_ACCOUNT);
             console.log(`eth balance:${balance}`);
         });
 
         it("send dai", async function () {
-            await EthHelper.transfer(RICH_ETH_ACCOUNT, RICH_DAI_ACCOUNT, 10);
-            await Erc20Helper.transfer(AaveV3ArbitrumAssets_DAI_UNDERLYING, RICH_DAI_ACCOUNT, IMPERSONATE_ACCOUNT, 100);
-            const balance = await Erc20Helper.balanceOf(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT);
+            await EthUtil.transfer(RICH_ETH_ACCOUNT, RICH_DAI_ACCOUNT, 10);
+            await Erc20Util.transfer(AaveV3ArbitrumAssets_DAI_UNDERLYING, RICH_DAI_ACCOUNT, IMPERSONATE_ACCOUNT, 100);
+            const balance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT);
             console.log(`dai balance:${balance}`);
         });
     });
@@ -80,21 +80,21 @@ describe("AAVE", function () {
 
         it("inc coin", async function () {
             // 给仿冒账户充值
-            await EthHelper.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT, 10);
-            await EthHelper.transfer(RICH_ETH_ACCOUNT, RICH_DAI_ACCOUNT, 10);
-            await Erc20Helper.transfer(AaveV3ArbitrumAssets_DAI_UNDERLYING, RICH_DAI_ACCOUNT, IMPERSONATE_ACCOUNT, 100);
-            await Erc20Helper.approve(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT, AaveV3ArbitrumAssets_DAI_A_TOKEN, 100);
+            await EthUtil.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT, 10);
+            await EthUtil.transfer(RICH_ETH_ACCOUNT, RICH_DAI_ACCOUNT, 10);
+            await Erc20Util.transfer(AaveV3ArbitrumAssets_DAI_UNDERLYING, RICH_DAI_ACCOUNT, IMPERSONATE_ACCOUNT, 100);
+            await Erc20Util.approve(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT, AaveV3ArbitrumAssets_DAI_A_TOKEN, 100);
 
-            let ethBalance = await EthHelper.getBalance(IMPERSONATE_ACCOUNT);
+            let ethBalance = await EthUtil.getBalance(IMPERSONATE_ACCOUNT);
             console.log(`${IMPERSONATE_ACCOUNT} eth balance:${ethBalance}`);
 
-            ethBalance = await EthHelper.getBalance(RICH_DAI_ACCOUNT);
+            ethBalance = await EthUtil.getBalance(RICH_DAI_ACCOUNT);
             console.log(`${RICH_DAI_ACCOUNT} eth balance:${ethBalance}`);
 
-            let daiBalance = await Erc20Helper.balanceOf(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT);
+            let daiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT);
             console.log(`${IMPERSONATE_ACCOUNT} dai balance:${daiBalance}`);
 
-            const allowance = await Erc20Helper.allowance(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT, AaveV3ArbitrumAssets_DAI_A_TOKEN);
+            const allowance = await Erc20Util.allowance(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT, AaveV3ArbitrumAssets_DAI_A_TOKEN);
             console.log(`allowance:${allowance}`);
         });
     });
@@ -104,11 +104,11 @@ describe("AAVE", function () {
             const {l2pool, L2Encoder} = await loadFixture(deployAAVEProtocolFixture);
 
             // 给仿冒账户充值
-            await EthHelper.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT, 10);
-            await EthHelper.transfer(RICH_ETH_ACCOUNT, RICH_DAI_ACCOUNT, 10);
-            await Erc20Helper.transfer(AaveV3ArbitrumAssets_DAI_UNDERLYING, RICH_DAI_ACCOUNT, IMPERSONATE_ACCOUNT, 100);
+            await EthUtil.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT, 10);
+            await EthUtil.transfer(RICH_ETH_ACCOUNT, RICH_DAI_ACCOUNT, 10);
+            await Erc20Util.transfer(AaveV3ArbitrumAssets_DAI_UNDERLYING, RICH_DAI_ACCOUNT, IMPERSONATE_ACCOUNT, 100);
             // 注意这里是要给pool合约approve
-            await Erc20Helper.approve(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT, POOL, 100);
+            await Erc20Util.approve(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT, POOL, 100);
 
             const supplyDAI = parseEther('10');
             // 两种调用方式
