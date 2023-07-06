@@ -4,16 +4,16 @@ import PoolV3Artifact from "@aave/core-v3/artifacts/contracts/protocol/pool/Pool
 import L2PoolV3Artifact from "@aave/core-v3/artifacts/contracts/protocol/pool/L2Pool.sol/L2Pool.json";
 import L2EncoderV3Artifact from "@aave/core-v3/artifacts/contracts/misc/L2Encoder.sol/L2Encoder.json";
 // import { AaveV2Avalanche } from "@bgd-labs/aave-address-book";   // Unknown file extension ".ts"
-import {L2_ENCODER, POOL} from "./AaveV3ArbitrumConstants"
+import {L2_ENCODER, POOL} from "./constants/AaveV3ArbitrumConstants"
 import {
     AaveV3ArbitrumAssets_DAI_A_TOKEN,
     AaveV3ArbitrumAssets_DAI_UNDERLYING,
     AaveV3ArbitrumAssets_WETH_UNDERLYING
-} from "./AaveV3ArbitrumAssetsConstants"
+} from "./constants/AaveV3ArbitrumAssetsConstants"
 import {DataTypes} from "@aave/core-v3/dist/types/types/protocol/pool/Pool";
 import {parseEther} from "ethers";
 import {EthUtil,} from "./utils/EthUtil";
-import {IMPERSONATE_ACCOUNT, RICH_DAI_ACCOUNT, RICH_ETH_ACCOUNT} from "./Constants";
+import {IMPERSONATE_ACCOUNT, RICH_DAI_ACCOUNT, RICH_ETH_ACCOUNT} from "./constants/Constants";
 import {AccountUtil} from "./utils/AccountUtil";
 import {Erc20Util} from "./utils/Erc20Util";
 
