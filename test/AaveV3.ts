@@ -62,6 +62,11 @@ describe("AAVE", function () {
             const balance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT);
             console.log(`dai balance:${balance}`);
         });
+
+        it("dai balance", async function () {
+            let aDaiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_A_TOKEN, IMPERSONATE_ACCOUNT);
+            console.log(`dai aToken amount:${aDaiBalance}`);
+        });
     });
 
     describe.skip("coin send and encoder", function () {
@@ -118,8 +123,8 @@ describe("AAVE", function () {
             const supplyResp = await l2pool.supply(AaveV3ArbitrumAssets_DAI_UNDERLYING, supplyDAI, IMPERSONATE_ACCOUNT, 0);
             await supplyResp.wait();
 
-            // todo
-            console.log(`dai aToken amount:${JSON.stringify(supplyResp.blockHash)}`);
+            let aDaiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_A_TOKEN, IMPERSONATE_ACCOUNT);
+            console.log(`dai aToken amount:${aDaiBalance}`);
         });
     });
 });
