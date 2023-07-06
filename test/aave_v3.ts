@@ -126,7 +126,9 @@ describe("AAVE", function () {
             // await supplyResp.wait();
             const supplyResp = await l2pool.supply(AaveV3ArbitrumAssets_DAI_UNDERLYING, supplyDAI, IMPERSONATE_ACCOUNT, 0);
             await supplyResp.wait();
-            console.log(`supply:${JSON.stringify(supplyResp.blockHash)}`);
+
+            // todo
+            console.log(`dai aToken amount:${JSON.stringify(supplyResp.blockHash)}`);
         });
     });
 });
