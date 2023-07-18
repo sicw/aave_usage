@@ -1,5 +1,6 @@
 import {loadFixture,} from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import {ethers} from "hardhat";
+import {time} from "@nomicfoundation/hardhat-network-helpers";
 import PoolV3Artifact from "@aave/core-v3/artifacts/contracts/protocol/pool/Pool.sol/Pool.json";
 import L2PoolV3Artifact from "@aave/core-v3/artifacts/contracts/protocol/pool/L2Pool.sol/L2Pool.json";
 import L2EncoderV3Artifact from "@aave/core-v3/artifacts/contracts/misc/L2Encoder.sol/L2Encoder.json";
@@ -104,7 +105,7 @@ describe("AAVE", function () {
         });
     });
 
-    describe("supply logic", function () {
+    describe.skip("supply logic", function () {
         it("supply", async function () {
             const {l2pool, L2Encoder} = await loadFixture(deployAAVEProtocolFixture);
 
@@ -123,6 +124,33 @@ describe("AAVE", function () {
             const supplyResp = await l2pool.supply(AaveV3ArbitrumAssets_DAI_UNDERLYING, supplyDAI, IMPERSONATE_ACCOUNT, 0);
             await supplyResp.wait();
 
+            let aDaiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_A_TOKEN, IMPERSONATE_ACCOUNT);
+            console.log(`dai aToken amount:${aDaiBalance}`);
+        });
+    });
+
+    describe("supply logic balanceOf", function () {
+        it("balanceOf", async function () {
+            const {l2pool, L2Encoder} = await loadFixture(deployAAVEProtocolFixture);
+
+            // 给仿冒账户充值
+            await EthUtil.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT, 10);
+            await EthUtil.transfer(RICH_ETH_ACCOUNT, RICH_DAI_ACCOUNT, 10);
+            await Erc20Util.transfer(AaveV3ArbitrumAssets_DAI_UNDERLYING, RICH_DAI_ACCOUNT, IMPERSONATE_ACCOUNT, 100);
+            // 注意这里是要给pool合约approve
+            await Erc20Util.approve(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT, POOL, 100);
+
+            // 在107375632块上(Jul-03-2023 07:00:50 AM) 已经有了37个DAIcoin
+
+            // 更改时间戳
+            await time.setNextBlockTimestamp(2752825045);
+
+            // 为了mint新块创建的交易. setNextBlockTimestamp只有在下一次mint时会更改blocktime
+            let supplyDAI = parseEther('1');
+            let supplyResp = await l2pool.supply(AaveV3ArbitrumAssets_DAI_UNDERLYING, supplyDAI, IMPERSONATE_ACCOUNT, 0);
+            await supplyResp.wait();
+
+            // 37 + 1应该是38.x个DAI coin 加上利息=63.7
             let aDaiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_A_TOKEN, IMPERSONATE_ACCOUNT);
             console.log(`dai aToken amount:${aDaiBalance}`);
         });
