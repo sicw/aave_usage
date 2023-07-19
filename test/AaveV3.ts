@@ -130,7 +130,34 @@ describe("AAVE", function () {
     });
 
     describe("supply logic balanceOf", function () {
-        it("balanceOf", async function () {
+        // 存款
+        it.skip("balanceOf", async function () {
+            const {l2pool, L2Encoder} = await loadFixture(deployAAVEProtocolFixture);
+
+            // 给仿冒账户充值
+            await EthUtil.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT, 10);
+            await EthUtil.transfer(RICH_ETH_ACCOUNT, RICH_DAI_ACCOUNT, 10);
+            await Erc20Util.transfer(AaveV3ArbitrumAssets_DAI_UNDERLYING, RICH_DAI_ACCOUNT, IMPERSONATE_ACCOUNT, 100);
+            // 注意这里是要给pool合约approve
+            await Erc20Util.approve(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT, POOL, 100);
+
+            // 在107375632块上(Jul-03-2023 07:00:50 AM) 已经有了37个aDAI币
+
+            // 更改时间戳
+            await time.setNextBlockTimestamp(2752825045);
+
+            // 为了mint新块创建的交易. setNextBlockTimestamp只有在下一次mint时会更改block time
+            let supplyDAI = parseEther('1');
+            let supplyResp = await l2pool.supply(AaveV3ArbitrumAssets_DAI_UNDERLYING, supplyDAI, IMPERSONATE_ACCOUNT, 0);
+            await supplyResp.wait();
+
+            // 正常37+1=38个aDAI, 加上时间利息=63.7aDAI
+            let aDaiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_A_TOKEN, IMPERSONATE_ACCOUNT);
+            console.log(`dai aToken amount:${aDaiBalance}`);
+        });
+
+        // 取款
+        it("withdraw", async function () {
             const {l2pool, L2Encoder} = await loadFixture(deployAAVEProtocolFixture);
 
             // 给仿冒账户充值
