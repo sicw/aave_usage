@@ -14,7 +14,7 @@ import {
 import {DataTypes} from "@aave/core-v3/dist/types/types/protocol/pool/Pool";
 import {parseEther} from "ethers";
 import {EthUtil,} from "./utils/EthUtil";
-import {IMPERSONATE_ACCOUNT, RICH_DAI_ACCOUNT, RICH_ETH_ACCOUNT} from "./constants/Constants";
+import {IMPERSONATE_ACCOUNT, RICH_DAI_ACCOUNT, RICH_ETH_ACCOUNT, TEST_ACCOUNT} from "./constants/Constants";
 import {AccountUtil} from "./utils/AccountUtil";
 import {Erc20Util} from "./utils/Erc20Util";
 
@@ -179,7 +179,20 @@ describe("AAVE", function () {
 
             // 正常37+1=38个aDAI, 加上时间利息=63.7aDAI
             let aDaiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_A_TOKEN, IMPERSONATE_ACCOUNT);
-            console.log(`dai aToken amount:${aDaiBalance}`);
+            console.log(`before withdraw dai aToken amount:${aDaiBalance}`);
+
+            let withdrawDAICount = parseEther('60');
+            // 发送交易完成
+            const withdrawResp = await l2pool.withdraw(AaveV3ArbitrumAssets_DAI_UNDERLYING, withdrawDAICount, TEST_ACCOUNT);
+            // 等待区块确认
+            await withdrawResp.wait();
+
+            aDaiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_A_TOKEN, IMPERSONATE_ACCOUNT);
+            console.log(`after withdraw dai aToken amount:${aDaiBalance}`);
+
+            let testAccountDaiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_UNDERLYING, TEST_ACCOUNT);
+            console.log(`test account dai token amount:${testAccountDaiBalance}`);
+
         });
     });
 });
