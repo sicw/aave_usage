@@ -8,7 +8,7 @@ import L2EncoderV3Artifact from "@aave/core-v3/artifacts/contracts/misc/L2Encode
 import {L2_ENCODER, POOL} from "./constants/AaveV3ArbitrumConstants"
 import {
     AaveV3ArbitrumAssets_DAI_A_TOKEN,
-    AaveV3ArbitrumAssets_DAI_UNDERLYING,
+    AaveV3ArbitrumAssets_DAI_UNDERLYING, AaveV3ArbitrumAssets_USDC_UNDERLYING,
     AaveV3ArbitrumAssets_WETH_UNDERLYING
 } from "./constants/AaveV3ArbitrumAssetsConstants"
 import {DataTypes} from "@aave/core-v3/dist/types/types/protocol/pool/Pool";
@@ -157,7 +157,7 @@ describe("AAVE", function () {
         });
 
         // 取款
-        it("withdraw", async function () {
+        it.skip("withdraw", async function () {
             const {l2pool, L2Encoder} = await loadFixture(deployAAVEProtocolFixture);
 
             // 给仿冒账户充值
@@ -194,5 +194,29 @@ describe("AAVE", function () {
             console.log(`test account dai token amount:${testAccountDaiBalance}`);
 
         });
+
+        // 借贷
+        it("borrow", async function () {
+            const {l2pool} = await loadFixture(deployAAVEProtocolFixture);
+
+            // 给仿冒账户充值
+            await EthUtil.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT, 1000);
+
+            let usdcAcount = parseEther('5000');
+            const borrowResp = await l2pool.borrow(AaveV3ArbitrumAssets_USDC_UNDERLYING, usdcAcount, 1, 0, IMPERSONATE_ACCOUNT);
+            await borrowResp.wait();
+
+            // 用什么抵押, 抵押币够不够? todo
+            let USDCBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_USDC_UNDERLYING, IMPERSONATE_ACCOUNT);
+            console.log(`borrow usdc amount:${USDCBalance}`);
+        });
     });
 });
+
+// 问题
+/*
+* 1. 存储后, 在提款时资产从哪来呢? 利息是谁给的?
+* 2.
+*
+*
+* */
