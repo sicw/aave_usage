@@ -17,6 +17,7 @@ import {EthUtil,} from "./utils/EthUtil";
 import {IMPERSONATE_ACCOUNT, RICH_DAI_ACCOUNT, RICH_ETH_ACCOUNT, TEST_ACCOUNT} from "./constants/Constants";
 import {AccountUtil} from "./utils/AccountUtil";
 import {Erc20Util} from "./utils/Erc20Util";
+import {JsonUtil} from "./utils/JsonUtil";
 
 describe("AAVE", function () {
 
@@ -196,7 +197,7 @@ describe("AAVE", function () {
         });
 
         // 借贷
-        it("borrow", async function () {
+        it.skip("borrow", async function () {
             const {l2pool} = await loadFixture(deployAAVEProtocolFixture);
 
             // 给仿冒账户充值
@@ -209,6 +210,27 @@ describe("AAVE", function () {
             // 用什么抵押, 抵押币够不够? todo
             let USDCBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_USDC_UNDERLYING, IMPERSONATE_ACCOUNT);
             console.log(`borrow usdc amount:${USDCBalance}`);
+        });
+
+        // 借贷test
+        it("borrowTest", async function () {
+            const {l2pool} = await loadFixture(deployAAVEProtocolFixture);
+            const reserveData : DataTypes.ReserveDataStruct = await l2pool.getReserveData(AaveV3ArbitrumAssets_USDC_UNDERLYING);
+            console.log(`configuration:${reserveData.configuration}`);
+            console.log(`liquidityIndex:${reserveData.liquidityIndex}`);
+            console.log(`currentLiquidityRate:${reserveData.currentLiquidityRate}`);
+            console.log(`variableBorrowIndex:${reserveData.variableBorrowIndex}`);
+            console.log(`currentVariableBorrowRate:${reserveData.currentVariableBorrowRate}`);
+            console.log(`currentStableBorrowRate:${reserveData.currentStableBorrowRate}`);
+            console.log(`lastUpdateTimestamp:${reserveData.lastUpdateTimestamp}`);
+            console.log(`id:${reserveData.id}`);
+            console.log(`aTokenAddress:${reserveData.aTokenAddress}`);
+            console.log(`stableDebtTokenAddress:${reserveData.stableDebtTokenAddress}`);
+            console.log(`variableDebtTokenAddress:${reserveData.variableDebtTokenAddress}`);
+            console.log(`interestRateStrategyAddress:${reserveData.interestRateStrategyAddress}`);
+            console.log(`accruedToTreasury:${reserveData.accruedToTreasury}`);
+            console.log(`unbacked:${reserveData.unbacked}`);
+            console.log(`isolationModeTotalDebt:${reserveData.isolationModeTotalDebt}`);
         });
     });
 });
