@@ -17,8 +17,6 @@ import {EthUtil,} from "./utils/EthUtil";
 import {IMPERSONATE_ACCOUNT, RICH_DAI_ACCOUNT, RICH_ETH_ACCOUNT, TEST_ACCOUNT} from "./constants/Constants";
 import {AccountUtil} from "./utils/AccountUtil";
 import {Erc20Util} from "./utils/Erc20Util";
-import {JsonUtil} from "./utils/JsonUtil";
-import {AaveProtocolDataProvider} from "@aave/core-v3/dist/types/types/misc/AaveProtocolDataProvider";
 import {AaveContractUtils} from "./utils/AaveContractUtils";
 
 describe("AAVE", function () {
@@ -235,11 +233,28 @@ describe("AAVE", function () {
             console.log(`isolationModeTotalDebt:${reserveData.isolationModeTotalDebt}`);
         });
 
-        it("ProtocolDataProvider.getReserveCaps", async function () {
+        it.skip("ProtocolDataProvider.getReserveCaps", async function () {
             const protocolDataProvider = await AaveContractUtils.getProtocolDataProvider();
             const caps = await protocolDataProvider.getReserveCaps(AaveV3ArbitrumAssets_USDC_UNDERLYING);
             // [ 100000000n, 150000000n ]
             console.log(caps);
+        });
+
+        it("ProtocolDataProvider.getReserveConfigurationData", async function () {
+            const protocolDataProvider = await AaveContractUtils.getProtocolDataProvider();
+            const [decimals, ltv, liquidationThreshold, liquidationBonus, reserveFactor,
+                usageAsCollateralEnabled, borrowingEnabled,
+                stableBorrowRateEnabled, isActive, isFrozen] = await protocolDataProvider.getReserveConfigurationData(AaveV3ArbitrumAssets_USDC_UNDERLYING);
+            console.log(`decimals:${decimals}`);
+            console.log(`ltv:${ltv}`);
+            console.log(`liquidationThreshold:${liquidationThreshold}`);
+            console.log(`liquidationBonus:${liquidationBonus}`);
+            console.log(`reserveFactor:${reserveFactor}`);
+            console.log(`usageAsCollateralEnabled:${usageAsCollateralEnabled}`);
+            console.log(`borrowingEnabled:${borrowingEnabled}`);
+            console.log(`stableBorrowRateEnabled:${stableBorrowRateEnabled}`);
+            console.log(`isActive:${isActive}`);
+            console.log(`isFrozen:${isFrozen}`);
         });
     });
 });
