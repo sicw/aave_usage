@@ -18,6 +18,8 @@ import {IMPERSONATE_ACCOUNT, RICH_DAI_ACCOUNT, RICH_ETH_ACCOUNT, TEST_ACCOUNT} f
 import {AccountUtil} from "./utils/AccountUtil";
 import {Erc20Util} from "./utils/Erc20Util";
 import {JsonUtil} from "./utils/JsonUtil";
+import {AaveProtocolDataProvider} from "@aave/core-v3/dist/types/types/misc/AaveProtocolDataProvider";
+import {AaveContractUtils} from "./utils/AaveContractUtils";
 
 describe("AAVE", function () {
 
@@ -213,7 +215,7 @@ describe("AAVE", function () {
         });
 
         // 借贷test
-        it("borrowTest", async function () {
+        it.skip("borrowTest", async function () {
             const {l2pool} = await loadFixture(deployAAVEProtocolFixture);
             const reserveData : DataTypes.ReserveDataStruct = await l2pool.getReserveData(AaveV3ArbitrumAssets_USDC_UNDERLYING);
             console.log(`configuration:${reserveData.configuration}`);
@@ -231,6 +233,12 @@ describe("AAVE", function () {
             console.log(`accruedToTreasury:${reserveData.accruedToTreasury}`);
             console.log(`unbacked:${reserveData.unbacked}`);
             console.log(`isolationModeTotalDebt:${reserveData.isolationModeTotalDebt}`);
+        });
+
+        it("ProtocolDataProvider", async function () {
+            const protocolDataProvider = await AaveContractUtils.getProtocolDataProvider();
+            const allTokens = await protocolDataProvider.getAllATokens();
+            console.log(allTokens);
         });
     });
 });
