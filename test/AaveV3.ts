@@ -235,10 +235,11 @@ describe("AAVE", function () {
             console.log(`isolationModeTotalDebt:${reserveData.isolationModeTotalDebt}`);
         });
 
-        it("ProtocolDataProvider", async function () {
+        it("ProtocolDataProvider.getReserveCaps", async function () {
             const protocolDataProvider = await AaveContractUtils.getProtocolDataProvider();
-            const allTokens = await protocolDataProvider.getAllATokens();
-            console.log(allTokens);
+            const caps = await protocolDataProvider.getReserveCaps(AaveV3ArbitrumAssets_USDC_UNDERLYING);
+            // [ 100000000n, 150000000n ]
+            console.log(caps);
         });
     });
 });
