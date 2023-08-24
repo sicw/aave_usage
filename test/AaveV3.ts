@@ -213,9 +213,26 @@ describe("AAVE", function () {
         });
 
         // 借贷test
-        it.skip("borrowTest", async function () {
+        it("borrowTest", async function () {
             const {l2pool} = await loadFixture(deployAAVEProtocolFixture);
             const reserveData : DataTypes.ReserveDataStruct = await l2pool.getReserveData(AaveV3ArbitrumAssets_USDC_UNDERLYING);
+            /**
+             configuration:379853422389047447188855351506279752947723411136420
+             liquidityIndex:1016168028378681120381950694
+             currentLiquidityRate:23026227920059288220160701
+             variableBorrowIndex:1029089360027063665701271710
+             currentVariableBorrowRate:31309178741922514865817786
+             currentStableBorrowRate:49472739820274644980831112
+             lastUpdateTimestamp:1688367632
+             id:2
+             aTokenAddress:0x625E7708f30cA75bfd92586e17077590C60eb4cD
+             stableDebtTokenAddress:0x307ffe186F84a3bc2613D1eA417A5737D69A7007
+             variableDebtTokenAddress:0xFCCf3cAbbe80101232d343252614b6A3eE81C989
+             interestRateStrategyAddress:0xd9d85499449f26d2A2c240defd75314f23920089
+             accruedToTreasury:2135081367
+             unbacked:0
+             isolationModeTotalDebt:0
+             */
             console.log(`configuration:${reserveData.configuration}`);
             console.log(`liquidityIndex:${reserveData.liquidityIndex}`);
             console.log(`currentLiquidityRate:${reserveData.currentLiquidityRate}`);
@@ -240,11 +257,23 @@ describe("AAVE", function () {
             console.log(caps);
         });
 
-        it("ProtocolDataProvider.getReserveConfigurationData", async function () {
+        it.skip("ProtocolDataProvider.getReserveConfigurationData", async function () {
             const protocolDataProvider = await AaveContractUtils.getProtocolDataProvider();
             const [decimals, ltv, liquidationThreshold, liquidationBonus, reserveFactor,
                 usageAsCollateralEnabled, borrowingEnabled,
                 stableBorrowRateEnabled, isActive, isFrozen] = await protocolDataProvider.getReserveConfigurationData(AaveV3ArbitrumAssets_USDC_UNDERLYING);
+            /**
+             decimals:6
+             ltv:8100
+             liquidationThreshold:8600
+             liquidationBonus:10500
+             reserveFactor:1000
+             usageAsCollateralEnabled:true
+             borrowingEnabled:true
+             stableBorrowRateEnabled:true
+             isActive:true
+             isFrozen:false
+             */
             console.log(`decimals:${decimals}`);
             console.log(`ltv:${ltv}`);
             console.log(`liquidationThreshold:${liquidationThreshold}`);
