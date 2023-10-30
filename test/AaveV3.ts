@@ -8,7 +8,7 @@ import L2EncoderV3Artifact from "@aave/core-v3/artifacts/contracts/misc/L2Encode
 import {L2_ENCODER, POOL} from "./constants/AaveV3ArbitrumConstants"
 import {
     AaveV3ArbitrumAssets_DAI_A_TOKEN,
-    AaveV3ArbitrumAssets_DAI_UNDERLYING, AaveV3ArbitrumAssets_USDC_UNDERLYING,
+    AaveV3ArbitrumAssets_DAI_UNDERLYING, AaveV3ArbitrumAssets_USDC_UNDERLYING, AaveV3ArbitrumAssets_USDT_A_TOKEN,
     AaveV3ArbitrumAssets_WETH_UNDERLYING
 } from "./constants/AaveV3ArbitrumAssetsConstants"
 import {DataTypes} from "@aave/core-v3/dist/types/types/protocol/pool/Pool";
@@ -69,6 +69,26 @@ describe("AAVE", function () {
         it("dai aToken balance", async function () {
             let aDaiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_A_TOKEN, IMPERSONATE_ACCOUNT);
             console.log(`dai aToken amount:${aDaiBalance}`);
+        });
+    });
+
+    describe("Query balance increase", function () {
+        it("获取balanceOf乘以当时的index", async function () {
+
+        });
+
+        it("遍历区块, 查询当时supply的事件", async function () {
+
+        });
+
+        it("从arbiscan查看账户信息, 存储时有emit Event", async function () {
+            // https://arbiscan.io/address/0xebb17ec2bce083605a9a665cbd905ece11e5498a
+            // 最开始共操作两次Supply With Permit 85000000 + 2000000
+            // aToken decimal: 6
+            // 时间20230728 共87$
+            // 时间20231030 共88.17$
+            // 累计124天
+            // 收益率 3.92% (1.17 / 124 * 365 / 87 * 100%)
         });
     });
 
