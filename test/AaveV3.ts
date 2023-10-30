@@ -22,6 +22,7 @@ import {AaveContractUtils} from "./utils/AaveContractUtils";
 describe("AAVE", function () {
 
     async function deployAAVEProtocolFixture() {
+        // 获取仿冒账户
         const signer = await AccountUtil.getImpersonateAccount(IMPERSONATE_ACCOUNT);
         const pool = new ethers.Contract(POOL, PoolV3Artifact.abi, signer);
         const l2pool = new ethers.Contract(POOL, L2PoolV3Artifact.abi, signer);
@@ -33,39 +34,39 @@ describe("AAVE", function () {
         };
     }
 
-    describe.skip("Before Test", function () {
+    describe("Before Test", function () {
         it("block number", async function () {
             const blockNum = await ethers.provider.getBlockNumber();
-            console.log(`blockNum:${blockNum}`)
+            console.log(`current blockNum:${blockNum}`)
         });
 
         it("account balance", async function () {
             const balance = await EthUtil.getBalance(IMPERSONATE_ACCOUNT);
-            console.log(`balance:${balance}`);
+            console.log(`impersonate account eth balance:${balance}`);
         });
 
         it("Impersonate Account", async function () {
             const signer = await AccountUtil.getImpersonateAccount(IMPERSONATE_ACCOUNT);
-            const address = await signer.getAddress();
-            console.log(`impersonate account address:${address}`);
+            // const address = await signer.getAddress();
+            // console.log(`impersonate account address:${address}`);
             const nonce = await signer.getNonce();
             console.log(`impersonate account nonce:${nonce}`)
         });
 
         it("send eth", async function () {
-            await EthUtil.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT, 10);
+            await EthUtil.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT, 1000);
             const balance = await EthUtil.getBalance(IMPERSONATE_ACCOUNT);
-            console.log(`eth balance:${balance}`);
+            console.log(`impersonate account balance:${balance} after transfer 1000 eth`);
         });
 
         it("send dai", async function () {
             await EthUtil.transfer(RICH_ETH_ACCOUNT, RICH_DAI_ACCOUNT, 10);
-            await Erc20Util.transfer(AaveV3ArbitrumAssets_DAI_UNDERLYING, RICH_DAI_ACCOUNT, IMPERSONATE_ACCOUNT, 100);
+            await Erc20Util.transfer(AaveV3ArbitrumAssets_DAI_UNDERLYING, RICH_DAI_ACCOUNT, IMPERSONATE_ACCOUNT, 1000);
             const balance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT);
-            console.log(`dai balance:${balance}`);
+            console.log(`dai balance:${balance} after transfer 1000 dai`);
         });
 
-        it("dai balance", async function () {
+        it("dai aToken balance", async function () {
             let aDaiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_A_TOKEN, IMPERSONATE_ACCOUNT);
             console.log(`dai aToken amount:${aDaiBalance}`);
         });
@@ -130,7 +131,7 @@ describe("AAVE", function () {
         });
     });
 
-    describe("supply logic balanceOf", function () {
+    describe.skip("supply logic balanceOf", function () {
         // 存款
         it.skip("balanceOf", async function () {
             const {l2pool, L2Encoder} = await loadFixture(deployAAVEProtocolFixture);
@@ -287,11 +288,3 @@ describe("AAVE", function () {
         });
     });
 });
-
-// 问题
-/*
-* 1. 存储后, 在提款时资产从哪来呢? 利息是谁给的?
-* 2.
-*
-*
-* */
