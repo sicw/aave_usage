@@ -4,6 +4,7 @@ import {time} from "@nomicfoundation/hardhat-network-helpers";
 import PoolV3Artifact from "@aave/core-v3/artifacts/contracts/protocol/pool/Pool.sol/Pool.json";
 import L2PoolV3Artifact from "@aave/core-v3/artifacts/contracts/protocol/pool/L2Pool.sol/L2Pool.json";
 import L2EncoderV3Artifact from "@aave/core-v3/artifacts/contracts/misc/L2Encoder.sol/L2Encoder.json";
+import ATokenArtifact from "@aave/core-v3/artifacts/contracts/protocol/tokenization/AToken.sol/AToken.json";
 // import { AaveV2Avalanche } from "@bgd-labs/aave-address-book";   // Unknown file extension ".ts"
 import {L2_ENCODER, POOL} from "./constants/AaveV3ArbitrumConstants"
 import {
@@ -28,13 +29,14 @@ describe("AAVE", function () {
         const l2pool = new ethers.Contract(POOL, L2PoolV3Artifact.abi, signer);
         const L2Encoder = new ethers.Contract(L2_ENCODER, L2EncoderV3Artifact.abi, signer);
         return {
+            signer,
             pool,
             l2pool,
             L2Encoder
         };
     }
 
-    describe("Before Test", function () {
+    describe.skip("Before Test", function () {
         it("block number", async function () {
             const blockNum = await ethers.provider.getBlockNumber();
             console.log(`current blockNum:${blockNum}`)
@@ -73,15 +75,23 @@ describe("AAVE", function () {
     });
 
     describe("Query balance increase", function () {
-        it("获取balanceOf乘以当时的index", async function () {
 
+        it.skip("遍历区块, 查询当时supply的事件", async function () {
+            const eventABI = ['event Supply(address indexed reserve,address user,address indexed onBehalfOf,uint256 amount,uint16 indexed referralCode)'];
+            const iface = new ethers.Interface(eventABI);
+            const filterEncodeData = iface.encodeFilterTopics('Supply', ['0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',null, '0xebb17ec2bce083605a9a665cbd905ece11e5498a', null, 0]);
+            const logs = await ethers.provider.getLogs({
+                fromBlock: 105700511,
+                toBlock: 105708511,
+                topics: filterEncodeData
+            });
+            // [{"_type":"log","address":"0x794a61358D6845594F94dc1DB02A252b5b4814aD","blockHash":"0xdff9f20a5ea22c79c75334cfd78dc14081c2709d9b4a29310730b9a46a7430e8","blockNumber":105702414,"data":"0x000000000000000000000000ebb17ec2bce083605a9a665cbd905ece11e5498a000000000000000000000000000000000000000000000000000000000510ff40","index":18,"removed":false,"topics":["0x2b627736bca15cd5381dcf80b0bf11fd197d01a037c52b927a881a10fb73ba61","0x000000000000000000000000fd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9","0x000000000000000000000000ebb17ec2bce083605a9a665cbd905ece11e5498a","0x0000000000000000000000000000000000000000000000000000000000000000"],"transactionHash":"0xb1d236c6fa92ce756a8b76740fba21caad18f06527879f4a94018932ee7306f6","transactionIndex":3},{"_type":"log","address":"0x794a61358D6845594F94dc1DB02A252b5b4814aD","blockHash":"0x405c75069347a54f5ea46e7ccceec53be5e0035d43ee3b4cc71c0e2a74de1568","blockNumber":105704510,"data":"0x000000000000000000000000ebb17ec2bce083605a9a665cbd905ece11e5498a00000000000000000000000000000000000000000000000000000000001e8480","index":6,"removed":false,"topics":["0x2b627736bca15cd5381dcf80b0bf11fd197d01a037c52b927a881a10fb73ba61","0x000000000000000000000000fd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9","0x000000000000000000000000ebb17ec2bce083605a9a665cbd905ece11e5498a","0x0000000000000000000000000000000000000000000000000000000000000000"],"transactionHash":"0xa27e9f12e888a9ae221a7087a86c5f1131dbf24781d7f6db8f23973aadc7823a","transactionIndex":1}]
+            // data中的数据是user+amount
+            // 0x1e8480 + 0x510ff40
+            console.log(JSON.stringify(logs))
         });
 
-        it("遍历区块, 查询当时supply的事件", async function () {
-
-        });
-
-        it("从arbiscan查看账户信息, 存储时有emit Event", async function () {
+        it.skip("从arbiscan查看账户信息, 存储时有emit Event", async function () {
             // https://arbiscan.io/address/0xebb17ec2bce083605a9a665cbd905ece11e5498a
             // 最开始共操作两次Supply With Permit 85000000 + 2000000
             // aToken decimal: 6
@@ -89,6 +99,16 @@ describe("AAVE", function () {
             // 时间20231030 共88.17$
             // 累计124天
             // 收益率 3.92% (1.17 / 124 * 365 / 87 * 100%)
+        });
+
+        it("获取balanceOf乘以当时的index", async function () {
+            const {signer} = await loadFixture(deployAAVEProtocolFixture);
+            const aTokenUsdt = new ethers.Contract(AaveV3ArbitrumAssets_USDT_A_TOKEN, ATokenArtifact.abi, signer);
+            const scaledBalanceOf = await aTokenUsdt.scaledBalanceOf(IMPERSONATE_ACCOUNT);
+            const previousIndex = await aTokenUsdt.getPreviousIndex(IMPERSONATE_ACCOUNT);
+            // 87000056091756065051665751799932552n
+            // 保留decimal 6位 870000
+            console.log(scaledBalanceOf * previousIndex);
         });
     });
 
