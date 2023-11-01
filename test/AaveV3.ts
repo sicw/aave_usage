@@ -263,6 +263,7 @@ describe("AAVE", function () {
             const impersonateAccount3Balance = await EthUtil.getBalance(IMPERSONATE_ACCOUNT3);
             console.log(`IMPERSONATE_ACCOUNT3 eth balance:${impersonateAccount3Balance}`);
 
+            // 转换为weth存储到weth资金池
             const borrowUsdtAmount = 5000000_000000n;
             const signer3 = await AccountUtil.getImpersonateAccount(IMPERSONATE_ACCOUNT3);
             await l2pool.connect(signer3).borrow(AaveV3ArbitrumAssets_USDT_UNDERLYING, borrowUsdtAmount, 1, 0, IMPERSONATE_ACCOUNT3);
