@@ -9,22 +9,35 @@ import ATokenArtifact from "@aave/core-v3/artifacts/contracts/protocol/tokenizat
 import {L2_ENCODER, POOL} from "./constants/AaveV3ArbitrumConstants"
 import {
     AaveV3ArbitrumAssets_DAI_A_TOKEN,
-    AaveV3ArbitrumAssets_DAI_UNDERLYING, AaveV3ArbitrumAssets_USDC_UNDERLYING, AaveV3ArbitrumAssets_USDT_A_TOKEN,
+    AaveV3ArbitrumAssets_DAI_UNDERLYING,
+    AaveV3ArbitrumAssets_USDC_UNDERLYING,
+    AaveV3ArbitrumAssets_USDT_A_TOKEN,
+    AaveV3ArbitrumAssets_USDT_UNDERLYING,
     AaveV3ArbitrumAssets_WETH_UNDERLYING
 } from "./constants/AaveV3ArbitrumAssetsConstants"
 import {DataTypes} from "@aave/core-v3/dist/types/types/protocol/pool/Pool";
-import {parseEther} from "ethers";
+import {formatUnits, parseEther, parseUnits} from "ethers";
 import {EthUtil,} from "./utils/EthUtil";
-import {IMPERSONATE_ACCOUNT, RICH_DAI_ACCOUNT, RICH_ETH_ACCOUNT, TEST_ACCOUNT} from "./constants/Constants";
+import {
+    IMPERSONATE_ACCOUNT1,
+    RICH_DAI_ACCOUNT,
+    RICH_ETH_ACCOUNT,
+    IMPERSONATE_ACCOUNT3,
+    IMPERSONATE_ACCOUNT2, RICH_USDT_ACCOUNT1, RAY, RAY_100, RAY_10000, RICH_USDT_ACCOUNT2
+} from "./constants/Constants";
 import {AccountUtil} from "./utils/AccountUtil";
 import {Erc20Util} from "./utils/Erc20Util";
 import {AaveContractUtils} from "./utils/AaveContractUtils";
+import {DataTypes} from "@aave/core-v3/dist/types/types/interfaces/IPool";
+import ReserveDataStruct = DataTypes.ReserveDataStruct;
+import ERC20Artifact
+    from "@aave/core-v3/artifacts/contracts/dependencies/openzeppelin/contracts/IERC20.sol/IERC20.json";
 
 describe("AAVE", function () {
 
     async function deployAAVEProtocolFixture() {
         // 获取仿冒账户
-        const signer = await AccountUtil.getImpersonateAccount(IMPERSONATE_ACCOUNT);
+        const signer = await AccountUtil.getImpersonateAccount(IMPERSONATE_ACCOUNT1);
         const pool = new ethers.Contract(POOL, PoolV3Artifact.abi, signer);
         const l2pool = new ethers.Contract(POOL, L2PoolV3Artifact.abi, signer);
         const L2Encoder = new ethers.Contract(L2_ENCODER, L2EncoderV3Artifact.abi, signer);
@@ -43,12 +56,12 @@ describe("AAVE", function () {
         });
 
         it("account balance", async function () {
-            const balance = await EthUtil.getBalance(IMPERSONATE_ACCOUNT);
+            const balance = await EthUtil.getBalance(IMPERSONATE_ACCOUNT1);
             console.log(`impersonate account eth balance:${balance}`);
         });
 
         it("Impersonate Account", async function () {
-            const signer = await AccountUtil.getImpersonateAccount(IMPERSONATE_ACCOUNT);
+            const signer = await AccountUtil.getImpersonateAccount(IMPERSONATE_ACCOUNT1);
             // const address = await signer.getAddress();
             // console.log(`impersonate account address:${address}`);
             const nonce = await signer.getNonce();
@@ -56,25 +69,25 @@ describe("AAVE", function () {
         });
 
         it("send eth", async function () {
-            await EthUtil.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT, 1000);
-            const balance = await EthUtil.getBalance(IMPERSONATE_ACCOUNT);
+            await EthUtil.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT1, 1000);
+            const balance = await EthUtil.getBalance(IMPERSONATE_ACCOUNT1);
             console.log(`impersonate account balance:${balance} after transfer 1000 eth`);
         });
 
         it("send dai", async function () {
             await EthUtil.transfer(RICH_ETH_ACCOUNT, RICH_DAI_ACCOUNT, 10);
-            await Erc20Util.transfer(AaveV3ArbitrumAssets_DAI_UNDERLYING, RICH_DAI_ACCOUNT, IMPERSONATE_ACCOUNT, 1000);
-            const balance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT);
+            await Erc20Util.transfer(AaveV3ArbitrumAssets_DAI_UNDERLYING, RICH_DAI_ACCOUNT, IMPERSONATE_ACCOUNT1, 1000);
+            const balance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT1);
             console.log(`dai balance:${balance} after transfer 1000 dai`);
         });
 
         it("dai aToken balance", async function () {
-            let aDaiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_A_TOKEN, IMPERSONATE_ACCOUNT);
+            let aDaiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_A_TOKEN, IMPERSONATE_ACCOUNT1);
             console.log(`dai aToken amount:${aDaiBalance}`);
         });
     });
 
-    describe("Query balance increase", function () {
+    describe.skip("Query balance increase", function () {
 
         it.skip("遍历区块, 查询当时supply的事件", async function () {
             const eventABI = ['event Supply(address indexed reserve,address user,address indexed onBehalfOf,uint256 amount,uint16 indexed referralCode)'];
@@ -104,8 +117,8 @@ describe("AAVE", function () {
         it("获取balanceOf乘以当时的index", async function () {
             const {signer} = await loadFixture(deployAAVEProtocolFixture);
             const aTokenUsdt = new ethers.Contract(AaveV3ArbitrumAssets_USDT_A_TOKEN, ATokenArtifact.abi, signer);
-            const scaledBalanceOf = await aTokenUsdt.scaledBalanceOf(IMPERSONATE_ACCOUNT);
-            const previousIndex = await aTokenUsdt.getPreviousIndex(IMPERSONATE_ACCOUNT);
+            const scaledBalanceOf = await aTokenUsdt.scaledBalanceOf(IMPERSONATE_ACCOUNT1);
+            const previousIndex = await aTokenUsdt.getPreviousIndex(IMPERSONATE_ACCOUNT1);
             // 87000056091756065051665751799932552n
             // 保留decimal 6位 870000
             console.log(scaledBalanceOf * previousIndex);
@@ -128,21 +141,21 @@ describe("AAVE", function () {
 
         it("inc coin", async function () {
             // 给仿冒账户充值
-            await EthUtil.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT, 10);
+            await EthUtil.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT1, 10);
             await EthUtil.transfer(RICH_ETH_ACCOUNT, RICH_DAI_ACCOUNT, 10);
-            await Erc20Util.transfer(AaveV3ArbitrumAssets_DAI_UNDERLYING, RICH_DAI_ACCOUNT, IMPERSONATE_ACCOUNT, 100);
-            await Erc20Util.approve(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT, AaveV3ArbitrumAssets_DAI_A_TOKEN, 100);
+            await Erc20Util.transfer(AaveV3ArbitrumAssets_DAI_UNDERLYING, RICH_DAI_ACCOUNT, IMPERSONATE_ACCOUNT1, 100);
+            await Erc20Util.approve(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT1, AaveV3ArbitrumAssets_DAI_A_TOKEN, 100);
 
-            let ethBalance = await EthUtil.getBalance(IMPERSONATE_ACCOUNT);
-            console.log(`${IMPERSONATE_ACCOUNT} eth balance:${ethBalance}`);
+            let ethBalance = await EthUtil.getBalance(IMPERSONATE_ACCOUNT1);
+            console.log(`${IMPERSONATE_ACCOUNT1} eth balance:${ethBalance}`);
 
             ethBalance = await EthUtil.getBalance(RICH_DAI_ACCOUNT);
             console.log(`${RICH_DAI_ACCOUNT} eth balance:${ethBalance}`);
 
-            let daiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT);
-            console.log(`${IMPERSONATE_ACCOUNT} dai balance:${daiBalance}`);
+            let daiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT1);
+            console.log(`${IMPERSONATE_ACCOUNT1} dai balance:${daiBalance}`);
 
-            const allowance = await Erc20Util.allowance(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT, AaveV3ArbitrumAssets_DAI_A_TOKEN);
+            const allowance = await Erc20Util.allowance(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT1, AaveV3ArbitrumAssets_DAI_A_TOKEN);
             console.log(`allowance:${allowance}`);
         });
     });
@@ -152,22 +165,107 @@ describe("AAVE", function () {
             const {l2pool, L2Encoder} = await loadFixture(deployAAVEProtocolFixture);
 
             // 给仿冒账户充值
-            await EthUtil.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT, 10);
+            await EthUtil.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT1, 10);
             await EthUtil.transfer(RICH_ETH_ACCOUNT, RICH_DAI_ACCOUNT, 10);
             await Erc20Util.transfer(AaveV3ArbitrumAssets_DAI_UNDERLYING, RICH_DAI_ACCOUNT, IMPERSONATE_ACCOUNT, 100);
             // 注意这里是要给pool合约approve
-            await Erc20Util.approve(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT, POOL, 100);
+            await Erc20Util.approve(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT1, POOL, 100);
 
             const supplyDAI = parseEther('10');
             // 两种调用方式
             // const params = await L2Encoder.encodeSupplyParams(AaveV3ArbitrumAssets_DAI_UNDERLYING, supplyDAI, 0);
             // const supplyResp = await l2pool.supply(params);
             // await supplyResp.wait();
-            const supplyResp = await l2pool.supply(AaveV3ArbitrumAssets_DAI_UNDERLYING, supplyDAI, IMPERSONATE_ACCOUNT, 0);
+            const supplyResp = await l2pool.supply(AaveV3ArbitrumAssets_DAI_UNDERLYING, supplyDAI, IMPERSONATE_ACCOUNT1, 0);
             await supplyResp.wait();
 
-            let aDaiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_A_TOKEN, IMPERSONATE_ACCOUNT);
+            let aDaiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_A_TOKEN, IMPERSONATE_ACCOUNT1);
             console.log(`dai aToken amount:${aDaiBalance}`);
+        });
+    });
+
+    describe("hack aave v3", function () {
+
+        it.skip("查看当前利率", async function () {
+            const {pool} = await loadFixture(deployAAVEProtocolFixture);
+            const reserveDataStruct:ReserveDataStruct = await pool.getReserveData(AaveV3ArbitrumAssets_USDT_UNDERLYING);
+            // 0754
+            console.log(`usdt reserve currentLiquidityRate: ${reserveDataStruct.currentLiquidityRate / RAY_10000}`);
+            // 1383
+            console.log(`usdt reserve currentStableBorrowRate: ${reserveDataStruct.currentStableBorrowRate / RAY_10000}`);
+        });
+
+        it.skip("查看eth账户余额", async function () {
+            const richEthAccountBalance = await EthUtil.getBalance(RICH_ETH_ACCOUNT);
+            // 472871555262598796435379
+            console.log(`RICH_ETH_ACCOUNT eth balance:${richEthAccountBalance}`);
+        });
+
+        it.skip("查询Erc20余额", async function () {
+            const erc20Contract = new ethers.Contract(AaveV3ArbitrumAssets_USDT_UNDERLYING, ERC20Artifact.abi, ethers.provider);
+            // 25726309208539
+            const bl = await erc20Contract.balanceOf(RICH_USDT_ACCOUNT2);
+            const fl = formatUnits(bl.toString(), 6);
+            // 25726309.208539
+            console.log(`IMPERSONATE_ACCOUNT2 usdt balance:${fl}`);
+        });
+
+        it.skip("查看当前USDT资金池存储量", async function () {
+            const usdtReserveTotalSupply = await Erc20Util.totalSupply(AaveV3ArbitrumAssets_USDT_A_TOKEN);
+            // 17050872301504
+            // 17050872.301504
+            console.log(`usdt资金池总存储量:${usdtReserveTotalSupply}`);
+        });
+
+        it("贷款利率变化", async function () {
+            /*
+            * 假设有无限多的资金.
+            * 1. 存入大量usdt, 降低利率
+            * 2. 另一个账户稳定利率贷款
+            * 3. 取出usdt
+            * */
+            const {l2pool} = await loadFixture(deployAAVEProtocolFixture);
+
+            // 一、存储usdt 去充值
+            const supplyUsdtAmount = 10000000_000000n;
+            const supplyEthAmount = 10_000000000000000000n;
+            await Erc20Util.transfer(AaveV3ArbitrumAssets_USDT_UNDERLYING, RICH_USDT_ACCOUNT1, IMPERSONATE_ACCOUNT2, supplyUsdtAmount);
+            await EthUtil.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT2, supplyEthAmount);
+            const impersonateAccount2Balance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_USDT_UNDERLYING, IMPERSONATE_ACCOUNT2);
+            console.log(`IMPERSONATE_ACCOUNT2 usdt balance:${impersonateAccount2Balance}`);
+
+            // 注意这里是要给pool合约approve
+            await Erc20Util.approve(AaveV3ArbitrumAssets_USDT_UNDERLYING, IMPERSONATE_ACCOUNT2, POOL, supplyUsdtAmount);
+
+            // 存储资金
+            const signer2 = await AccountUtil.getImpersonateAccount(IMPERSONATE_ACCOUNT2);
+            const supplyResp = await l2pool.connect(signer2).supply(AaveV3ArbitrumAssets_USDT_UNDERLYING, supplyUsdtAmount, IMPERSONATE_ACCOUNT2, 0);
+            await supplyResp.wait();
+
+            let aUsdtBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_USDT_A_TOKEN, IMPERSONATE_ACCOUNT2);
+            console.log(`usdt aToken amount:${aUsdtBalance}`);
+
+            /*
+            * 存储1千万usdt, 是稳定利率从13% 降到 5%
+            * */
+            const reserveDataStruct:ReserveDataStruct = await l2pool.getReserveData(AaveV3ArbitrumAssets_USDT_UNDERLYING);
+            // 157
+            console.log(`usdt reserve currentLiquidityRate: ${reserveDataStruct.currentLiquidityRate / RAY_10000}`);
+            // 589
+            console.log(`usdt reserve currentStableBorrowRate: ${reserveDataStruct.currentStableBorrowRate / RAY_10000}`);
+
+            // 二、使用账户2进行稳定利率贷款
+
+            // 1. 进行抵押设置
+            // 存储eth 做做抵押贷款
+            const ethCollateralAmount = 40000_000000000000000000n;
+            await EthUtil.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT3, ethCollateralAmount);
+            const impersonateAccount3Balance = await EthUtil.getBalance(IMPERSONATE_ACCOUNT3);
+            console.log(`IMPERSONATE_ACCOUNT3 eth balance:${impersonateAccount3Balance}`);
+
+            const borrowUsdtAmount = 5000000_000000n;
+            const signer3 = await AccountUtil.getImpersonateAccount(IMPERSONATE_ACCOUNT3);
+            await l2pool.connect(signer3).borrow(AaveV3ArbitrumAssets_USDT_UNDERLYING, borrowUsdtAmount, 1, 0, IMPERSONATE_ACCOUNT3);
         });
     });
 
@@ -177,11 +275,11 @@ describe("AAVE", function () {
             const {l2pool, L2Encoder} = await loadFixture(deployAAVEProtocolFixture);
 
             // 给仿冒账户充值
-            await EthUtil.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT, 10);
+            await EthUtil.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT1, 10);
             await EthUtil.transfer(RICH_ETH_ACCOUNT, RICH_DAI_ACCOUNT, 10);
-            await Erc20Util.transfer(AaveV3ArbitrumAssets_DAI_UNDERLYING, RICH_DAI_ACCOUNT, IMPERSONATE_ACCOUNT, 100);
+            await Erc20Util.transfer(AaveV3ArbitrumAssets_DAI_UNDERLYING, RICH_DAI_ACCOUNT, IMPERSONATE_ACCOUNT1, 100);
             // 注意这里是要给pool合约approve
-            await Erc20Util.approve(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT, POOL, 100);
+            await Erc20Util.approve(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT1, POOL, 100);
 
             // 在107375632块上(Jul-03-2023 07:00:50 AM) 已经有了37个aDAI币
 
@@ -190,11 +288,11 @@ describe("AAVE", function () {
 
             // 为了mint新块创建的交易. setNextBlockTimestamp只有在下一次mint时会更改block time
             let supplyDAI = parseEther('1');
-            let supplyResp = await l2pool.supply(AaveV3ArbitrumAssets_DAI_UNDERLYING, supplyDAI, IMPERSONATE_ACCOUNT, 0);
+            let supplyResp = await l2pool.supply(AaveV3ArbitrumAssets_DAI_UNDERLYING, supplyDAI, IMPERSONATE_ACCOUNT1, 0);
             await supplyResp.wait();
 
             // 正常37+1=38个aDAI, 加上时间利息=63.7aDAI
-            let aDaiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_A_TOKEN, IMPERSONATE_ACCOUNT);
+            let aDaiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_A_TOKEN, IMPERSONATE_ACCOUNT1);
             console.log(`dai aToken amount:${aDaiBalance}`);
         });
 
@@ -203,11 +301,11 @@ describe("AAVE", function () {
             const {l2pool, L2Encoder} = await loadFixture(deployAAVEProtocolFixture);
 
             // 给仿冒账户充值
-            await EthUtil.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT, 10);
+            await EthUtil.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT1, 10);
             await EthUtil.transfer(RICH_ETH_ACCOUNT, RICH_DAI_ACCOUNT, 10);
-            await Erc20Util.transfer(AaveV3ArbitrumAssets_DAI_UNDERLYING, RICH_DAI_ACCOUNT, IMPERSONATE_ACCOUNT, 100);
+            await Erc20Util.transfer(AaveV3ArbitrumAssets_DAI_UNDERLYING, RICH_DAI_ACCOUNT, IMPERSONATE_ACCOUNT1, 100);
             // 注意这里是要给pool合约approve
-            await Erc20Util.approve(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT, POOL, 100);
+            await Erc20Util.approve(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT1, POOL, 100);
 
             // 在107375632块上(Jul-03-2023 07:00:50 AM) 已经有了37个aDAI币
 
@@ -216,23 +314,23 @@ describe("AAVE", function () {
 
             // 为了mint新块创建的交易. setNextBlockTimestamp只有在下一次mint时会更改block time
             let supplyDAI = parseEther('1');
-            let supplyResp = await l2pool.supply(AaveV3ArbitrumAssets_DAI_UNDERLYING, supplyDAI, IMPERSONATE_ACCOUNT, 0);
+            let supplyResp = await l2pool.supply(AaveV3ArbitrumAssets_DAI_UNDERLYING, supplyDAI, IMPERSONATE_ACCOUNT1, 0);
             await supplyResp.wait();
 
             // 正常37+1=38个aDAI, 加上时间利息=63.7aDAI
-            let aDaiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_A_TOKEN, IMPERSONATE_ACCOUNT);
+            let aDaiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_A_TOKEN, IMPERSONATE_ACCOUNT1);
             console.log(`before withdraw dai aToken amount:${aDaiBalance}`);
 
             let withdrawDAICount = parseEther('60');
             // 发送交易完成
-            const withdrawResp = await l2pool.withdraw(AaveV3ArbitrumAssets_DAI_UNDERLYING, withdrawDAICount, TEST_ACCOUNT);
+            const withdrawResp = await l2pool.withdraw(AaveV3ArbitrumAssets_DAI_UNDERLYING, withdrawDAICount, IMPERSONATE_ACCOUNT3);
             // 等待区块确认
             await withdrawResp.wait();
 
-            aDaiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_A_TOKEN, IMPERSONATE_ACCOUNT);
+            aDaiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_A_TOKEN, IMPERSONATE_ACCOUNT1);
             console.log(`after withdraw dai aToken amount:${aDaiBalance}`);
 
-            let testAccountDaiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_UNDERLYING, TEST_ACCOUNT);
+            let testAccountDaiBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_DAI_UNDERLYING, IMPERSONATE_ACCOUNT3);
             console.log(`test account dai token amount:${testAccountDaiBalance}`);
 
         });
@@ -242,14 +340,14 @@ describe("AAVE", function () {
             const {l2pool} = await loadFixture(deployAAVEProtocolFixture);
 
             // 给仿冒账户充值
-            await EthUtil.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT, 1000);
+            await EthUtil.transfer(RICH_ETH_ACCOUNT, IMPERSONATE_ACCOUNT1, 1000);
 
             let usdcAcount = parseEther('5000');
-            const borrowResp = await l2pool.borrow(AaveV3ArbitrumAssets_USDC_UNDERLYING, usdcAcount, 1, 0, IMPERSONATE_ACCOUNT);
+            const borrowResp = await l2pool.borrow(AaveV3ArbitrumAssets_USDC_UNDERLYING, usdcAcount, 1, 0, IMPERSONATE_ACCOUNT1);
             await borrowResp.wait();
 
             // 用什么抵押, 抵押币够不够? todo
-            let USDCBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_USDC_UNDERLYING, IMPERSONATE_ACCOUNT);
+            let USDCBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_USDC_UNDERLYING, IMPERSONATE_ACCOUNT1);
             console.log(`borrow usdc amount:${USDCBalance}`);
         });
 
