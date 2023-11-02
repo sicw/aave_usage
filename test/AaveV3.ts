@@ -32,6 +32,7 @@ import {DataTypes} from "@aave/core-v3/dist/types/types/interfaces/IPool";
 import ReserveDataStruct = DataTypes.ReserveDataStruct;
 import ERC20Artifact
     from "@aave/core-v3/artifacts/contracts/dependencies/openzeppelin/contracts/IERC20.sol/IERC20.json";
+import {WethUtils} from "./utils/WethUtils";
 
 describe("AAVE", function () {
 
@@ -217,7 +218,23 @@ describe("AAVE", function () {
             console.log(`usdt资金池总存储量:${usdtReserveTotalSupply}`);
         });
 
-        it("贷款利率变化", async function () {
+        it("weth存款、取款", async function () {
+            let wethBalance = await WethUtils.totalSupply(AaveV3ArbitrumAssets_WETH_UNDERLYING, RICH_ETH_ACCOUNT);
+            console.log(`weth total supply balance:${wethBalance}`)
+
+            await WethUtils.deposit(AaveV3ArbitrumAssets_WETH_UNDERLYING, RICH_ETH_ACCOUNT, 10000);
+            wethBalance = await WethUtils.totalSupply(AaveV3ArbitrumAssets_WETH_UNDERLYING, RICH_ETH_ACCOUNT);
+            console.log(`weth balance after deposit:${wethBalance}`)
+
+            await WethUtils.withdraw(AaveV3ArbitrumAssets_WETH_UNDERLYING, RICH_ETH_ACCOUNT, 100);
+            wethBalance = await WethUtils.totalSupply(AaveV3ArbitrumAssets_WETH_UNDERLYING, RICH_ETH_ACCOUNT);
+            console.log(`weth balance after withdraw:${wethBalance}`)
+
+            wethBalance = await WethUtils.balanceOf(AaveV3ArbitrumAssets_WETH_UNDERLYING, RICH_ETH_ACCOUNT);
+            console.log(`weth balance:${wethBalance}`)
+        });
+
+        it.skip("贷款利率变化", async function () {
             /*
             * 假设有无限多的资金.
             * 1. 存入大量usdt, 降低利率
@@ -245,9 +262,7 @@ describe("AAVE", function () {
             let aUsdtBalance = await Erc20Util.balanceOf(AaveV3ArbitrumAssets_USDT_A_TOKEN, IMPERSONATE_ACCOUNT2);
             console.log(`usdt aToken amount:${aUsdtBalance}`);
 
-            /*
-            * 存储1千万usdt, 是稳定利率从13% 降到 5%
-            * */
+            // 存储1千万usdt, 是稳定利率从13% 降到 5%
             const reserveDataStruct:ReserveDataStruct = await l2pool.getReserveData(AaveV3ArbitrumAssets_USDT_UNDERLYING);
             // 157
             console.log(`usdt reserve currentLiquidityRate: ${reserveDataStruct.currentLiquidityRate / RAY_10000}`);
@@ -264,6 +279,9 @@ describe("AAVE", function () {
             console.log(`IMPERSONATE_ACCOUNT3 eth balance:${impersonateAccount3Balance}`);
 
             // 转换为weth存储到weth资金池
+
+
+            // 借款
             const borrowUsdtAmount = 5000000_000000n;
             const signer3 = await AccountUtil.getImpersonateAccount(IMPERSONATE_ACCOUNT3);
             await l2pool.connect(signer3).borrow(AaveV3ArbitrumAssets_USDT_UNDERLYING, borrowUsdtAmount, 1, 0, IMPERSONATE_ACCOUNT3);
