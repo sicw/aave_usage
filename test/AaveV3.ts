@@ -240,6 +240,8 @@ describe("AAVE", function () {
             * 1. 存入大量usdt, 降低利率
             * 2. 另一个账户稳定利率贷款
             * 3. 取出usdt
+            *
+            * 这样不现实, 1是有贷款利率rebalance. 2是有其他人会打破这种平衡
             * */
             const {l2pool} = await loadFixture(deployAAVEProtocolFixture);
 
