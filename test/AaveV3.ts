@@ -5,8 +5,8 @@ import PoolV3Artifact from "@aave/core-v3/artifacts/contracts/protocol/pool/Pool
 import L2PoolV3Artifact from "@aave/core-v3/artifacts/contracts/protocol/pool/L2Pool.sol/L2Pool.json";
 import L2EncoderV3Artifact from "@aave/core-v3/artifacts/contracts/misc/L2Encoder.sol/L2Encoder.json";
 import ATokenArtifact from "@aave/core-v3/artifacts/contracts/protocol/tokenization/AToken.sol/AToken.json";
-// import { AaveV2Avalanche } from "@bgd-labs/aave-address-book";   // Unknown file extension ".ts"
-import {L2_ENCODER, POOL} from "./constants/AaveV3ArbitrumConstants"
+import InterestRateStrategyArtifact from "@aave/core-v3/artifacts/contracts/protocol/pool/DefaultReserveInterestRateStrategy.sol/DefaultReserveInterestRateStrategy.json";
+import {INTEREST_RATE_STRATEGY_ADDRESS, L2_ENCODER, POOL} from "./constants/AaveV3ArbitrumConstants"
 import {
     AaveV3ArbitrumAssets_DAI_A_TOKEN,
     AaveV3ArbitrumAssets_DAI_UNDERLYING,
@@ -42,11 +42,13 @@ describe("AAVE", function () {
         const pool = new ethers.Contract(POOL, PoolV3Artifact.abi, signer);
         const l2pool = new ethers.Contract(POOL, L2PoolV3Artifact.abi, signer);
         const L2Encoder = new ethers.Contract(L2_ENCODER, L2EncoderV3Artifact.abi, signer);
+        const interestRateStrategy = new ethers.Contract(INTEREST_RATE_STRATEGY_ADDRESS, InterestRateStrategyArtifact.abi, signer);
         return {
             signer,
             pool,
             l2pool,
-            L2Encoder
+            L2Encoder,
+            interestRateStrategy
         };
     }
 
@@ -342,56 +344,8 @@ describe("AAVE", function () {
         });
     });
 
-    describe("hack aave v3", function () {
-
-        it.skip("查看当前利率", async function () {
-            const {pool} = await loadFixture(deployAAVEProtocolFixture);
-            const reserveDataStruct:ReserveDataStruct = await pool.getReserveData(AaveV3ArbitrumAssets_USDT_UNDERLYING);
-            // 0754
-            console.log(`usdt reserve currentLiquidityRate: ${reserveDataStruct.currentLiquidityRate / RAY_10000}`);
-            // 1383
-            console.log(`usdt reserve currentStableBorrowRate: ${reserveDataStruct.currentStableBorrowRate / RAY_10000}`);
-        });
-
-        it.skip("查看eth账户余额", async function () {
-            const richEthAccountBalance = await EthUtil.getBalance(RICH_ETH_ACCOUNT);
-            // 472871555262598796435379
-            console.log(`RICH_ETH_ACCOUNT eth balance:${richEthAccountBalance}`);
-        });
-
-        it.skip("查询Erc20余额", async function () {
-            const erc20Contract = new ethers.Contract(AaveV3ArbitrumAssets_USDT_UNDERLYING, ERC20Artifact.abi, ethers.provider);
-            // 25726309208539
-            const bl = await erc20Contract.balanceOf(RICH_USDT_ACCOUNT2);
-            const fl = formatUnits(bl.toString(), 6);
-            // 25726309.208539
-            console.log(`IMPERSONATE_ACCOUNT2 usdt balance:${fl}`);
-        });
-
-        it.skip("查看当前USDT资金池存储量", async function () {
-            const usdtReserveTotalSupply = await Erc20Util.totalSupply(AaveV3ArbitrumAssets_USDT_A_TOKEN);
-            // 17050872301504
-            // 17050872.301504
-            console.log(`usdt资金池总存储量:${usdtReserveTotalSupply}`);
-        });
-
-        it.skip("weth存款、取款", async function () {
-            let wethBalance = await WethUtils.totalSupply(AaveV3ArbitrumAssets_WETH_UNDERLYING, RICH_ETH_ACCOUNT);
-            console.log(`weth total supply balance:${wethBalance}`)
-
-            await WethUtils.deposit(AaveV3ArbitrumAssets_WETH_UNDERLYING, RICH_ETH_ACCOUNT, 10000);
-            wethBalance = await WethUtils.totalSupply(AaveV3ArbitrumAssets_WETH_UNDERLYING, RICH_ETH_ACCOUNT);
-            console.log(`weth balance after deposit:${wethBalance}`)
-
-            await WethUtils.withdraw(AaveV3ArbitrumAssets_WETH_UNDERLYING, RICH_ETH_ACCOUNT, 100);
-            wethBalance = await WethUtils.totalSupply(AaveV3ArbitrumAssets_WETH_UNDERLYING, RICH_ETH_ACCOUNT);
-            console.log(`weth balance after withdraw:${wethBalance}`)
-
-            wethBalance = await WethUtils.balanceOf(AaveV3ArbitrumAssets_WETH_UNDERLYING, RICH_ETH_ACCOUNT);
-            console.log(`weth balance:${wethBalance}`)
-        });
-
-        it("贷款利率变化", async function () {
+    describe("骇客", function () {
+        it.skip("贷款利率变化", async function () {
             /*
             * 假设有无限多的资金.
             * 1. 存入大量usdt, 降低利率
@@ -471,5 +425,81 @@ describe("AAVE", function () {
             // 8228
             console.log(`usdt reserve currentStableBorrowRate: ${reserveDataStruct.currentStableBorrowRate / RAY_10000}`);
         });
+    });
+
+    describe("查看数据", function () {
+
+        it.skip("查看当前利率", async function () {
+            const {pool} = await loadFixture(deployAAVEProtocolFixture);
+            const reserveDataStruct:ReserveDataStruct = await pool.getReserveData(AaveV3ArbitrumAssets_USDT_UNDERLYING);
+            // 0754
+            console.log(`usdt reserve currentLiquidityRate: ${reserveDataStruct.currentLiquidityRate / RAY_10000}`);
+            // 1383
+            console.log(`usdt reserve currentStableBorrowRate: ${reserveDataStruct.currentStableBorrowRate / RAY_10000}`);
+        });
+
+        it.skip("查看eth账户余额", async function () {
+            const richEthAccountBalance = await EthUtil.getBalance(RICH_ETH_ACCOUNT);
+            // 472871555262598796435379
+            console.log(`RICH_ETH_ACCOUNT eth balance:${richEthAccountBalance}`);
+        });
+
+        it.skip("查询Erc20余额", async function () {
+            const erc20Contract = new ethers.Contract(AaveV3ArbitrumAssets_USDT_UNDERLYING, ERC20Artifact.abi, ethers.provider);
+            // 25726309208539
+            const bl = await erc20Contract.balanceOf(RICH_USDT_ACCOUNT2);
+            const fl = formatUnits(bl.toString(), 6);
+            // 25726309.208539
+            console.log(`IMPERSONATE_ACCOUNT2 usdt balance:${fl}`);
+        });
+
+        it.skip("查看当前USDT资金池存储量", async function () {
+            const usdtReserveTotalSupply = await Erc20Util.totalSupply(AaveV3ArbitrumAssets_USDT_A_TOKEN);
+            // 17050872301504
+            // 17050872.301504
+            console.log(`usdt资金池总存储量:${usdtReserveTotalSupply}`);
+        });
+
+        it.skip("weth存款、取款", async function () {
+            let wethBalance = await WethUtils.totalSupply(AaveV3ArbitrumAssets_WETH_UNDERLYING, RICH_ETH_ACCOUNT);
+            console.log(`weth total supply balance:${wethBalance}`)
+
+            await WethUtils.deposit(AaveV3ArbitrumAssets_WETH_UNDERLYING, RICH_ETH_ACCOUNT, 10000);
+            wethBalance = await WethUtils.totalSupply(AaveV3ArbitrumAssets_WETH_UNDERLYING, RICH_ETH_ACCOUNT);
+            console.log(`weth balance after deposit:${wethBalance}`)
+
+            await WethUtils.withdraw(AaveV3ArbitrumAssets_WETH_UNDERLYING, RICH_ETH_ACCOUNT, 100);
+            wethBalance = await WethUtils.totalSupply(AaveV3ArbitrumAssets_WETH_UNDERLYING, RICH_ETH_ACCOUNT);
+            console.log(`weth balance after withdraw:${wethBalance}`)
+
+            wethBalance = await WethUtils.balanceOf(AaveV3ArbitrumAssets_WETH_UNDERLYING, RICH_ETH_ACCOUNT);
+            console.log(`weth balance:${wethBalance}`)
+        });
+
+        it.skip("查看当前稳定性利率", async function () {
+            const {l2pool} = await loadFixture(deployAAVEProtocolFixture);
+            const reserveData : DataTypes.ReserveDataStruct = await l2pool.getReserveData(AaveV3ArbitrumAssets_USDT_UNDERLYING);
+            // 138363543798709870575804245
+            // 0.1383
+            console.log(`currentStableBorrowRate:${reserveData.currentStableBorrowRate}`);
+        });
+
+        it.skip("查看收益计算策略地址", async function () {
+            const {l2pool} = await loadFixture(deployAAVEProtocolFixture);
+            const reserveData : DataTypes.ReserveDataStruct = await l2pool.getReserveData(AaveV3ArbitrumAssets_USDT_UNDERLYING);
+            // 0xA9F3C3caE095527061e6d270DBE163693e6fda9D
+            console.log(`interestRateStrategyAddress:${reserveData.interestRateStrategyAddress}`);
+        });
+
+        it("查看贷款最佳使用率", async function () {
+            const {interestRateStrategy} = await loadFixture(deployAAVEProtocolFixture);
+            // 200000000000000000000000000
+            // 0.2
+            console.log(`MAX_EXCESS_USAGE_RATIO:${await interestRateStrategy.MAX_EXCESS_USAGE_RATIO()}`);
+            // 800000000000000000000000000
+            // 0.8
+            console.log(`OPTIMAL_USAGE_RATIO:${await interestRateStrategy.OPTIMAL_USAGE_RATIO()}`);
+        });
+
     });
 });
