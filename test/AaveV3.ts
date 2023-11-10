@@ -429,13 +429,15 @@ describe("AAVE", function () {
 
     describe("查看数据", function () {
 
-        it.skip("查看当前利率", async function () {
+        it("查看当前利率", async function () {
             const {pool} = await loadFixture(deployAAVEProtocolFixture);
             const reserveDataStruct:ReserveDataStruct = await pool.getReserveData(AaveV3ArbitrumAssets_USDT_UNDERLYING);
-            // 0754
+            // 0.0754
             console.log(`usdt reserve currentLiquidityRate: ${reserveDataStruct.currentLiquidityRate / RAY_10000}`);
-            // 1383
+            // 0.1383
             console.log(`usdt reserve currentStableBorrowRate: ${reserveDataStruct.currentStableBorrowRate / RAY_10000}`);
+            // 0
+            console.log(`usdt reserve unbacked: ${reserveDataStruct.unbacked}`);
         });
 
         it.skip("查看eth账户余额", async function () {
@@ -491,7 +493,7 @@ describe("AAVE", function () {
             console.log(`interestRateStrategyAddress:${reserveData.interestRateStrategyAddress}`);
         });
 
-        it("查看贷款最佳使用率", async function () {
+        it.skip("查看贷款最佳使用率", async function () {
             const {interestRateStrategy} = await loadFixture(deployAAVEProtocolFixture);
             // 200000000000000000000000000
             // 0.2
@@ -501,5 +503,29 @@ describe("AAVE", function () {
             console.log(`OPTIMAL_USAGE_RATIO:${await interestRateStrategy.OPTIMAL_USAGE_RATIO()}`);
         });
 
+        it.skip("查看可变利率", async function () {
+            const {interestRateStrategy} = await loadFixture(deployAAVEProtocolFixture);
+            // 0
+            console.log(`baseRate:${await interestRateStrategy.getBaseVariableBorrowRate()}`);
+            // baseRate + Slope1 + Slope2
+            // 0.79
+            console.log(`baseRate + Slope1 + Slope2:${await interestRateStrategy.getMaxVariableBorrowRate()}`);
+            // 0.04
+            console.log(`Slope1:${await interestRateStrategy.getVariableRateSlope1()}`);
+            // 0.75
+            console.log(`Slope2:${await interestRateStrategy.getVariableRateSlope2()}`);
+        });
+
+        it("查看稳定利率", async function () {
+            const {interestRateStrategy} = await loadFixture(deployAAVEProtocolFixture);
+            // 0.005
+            console.log(`Slope1:${await interestRateStrategy.getStableRateSlope1()/RAY_10000}`);
+            // 0.75
+            console.log(`Slope2:${await interestRateStrategy.getStableRateSlope2()/RAY_10000}`);
+            // 0.08
+            console.log(`StableRateExcessOffset:${await interestRateStrategy.getStableRateExcessOffset()/RAY_10000}`);
+            // 0.05 = 0.04 + 0.01
+            console.log(`BaseStableBorrowRate:${await interestRateStrategy.getBaseStableBorrowRate()/RAY_10000}`);
+        });
     });
 });
