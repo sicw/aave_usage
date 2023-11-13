@@ -497,6 +497,7 @@ describe("AAVE", function () {
             const {interestRateStrategy} = await loadFixture(deployAAVEProtocolFixture);
             // 200000000000000000000000000
             // 0.2
+            // 1 - OPTIMAL_USAGE_RATIO
             console.log(`MAX_EXCESS_USAGE_RATIO:${await interestRateStrategy.MAX_EXCESS_USAGE_RATIO()}`);
             // 800000000000000000000000000
             // 0.8
@@ -507,25 +508,25 @@ describe("AAVE", function () {
             const {interestRateStrategy} = await loadFixture(deployAAVEProtocolFixture);
             // 0
             console.log(`baseRate:${await interestRateStrategy.getBaseVariableBorrowRate()}`);
-            // baseRate + Slope1 + Slope2
-            // 0.79
-            console.log(`baseRate + Slope1 + Slope2:${await interestRateStrategy.getMaxVariableBorrowRate()}`);
             // 0.04
             console.log(`Slope1:${await interestRateStrategy.getVariableRateSlope1()}`);
             // 0.75
             console.log(`Slope2:${await interestRateStrategy.getVariableRateSlope2()}`);
+            // MaxVariableBorrowRate = baseRate + Slope1 + Slope2
+            // 0.79
+            console.log(`baseRate + Slope1 + Slope2:${await interestRateStrategy.getMaxVariableBorrowRate()}`);
         });
 
         it("查看稳定利率", async function () {
             const {interestRateStrategy} = await loadFixture(deployAAVEProtocolFixture);
+            // 0.05 = 0.04 + 0.01 (VarSlope1 + 基本稳定利率增量)
+            console.log(`BaseStableBorrowRate:${await interestRateStrategy.getBaseStableBorrowRate()/RAY_10000}`);
             // 0.005
             console.log(`Slope1:${await interestRateStrategy.getStableRateSlope1()/RAY_10000}`);
             // 0.75
             console.log(`Slope2:${await interestRateStrategy.getStableRateSlope2()/RAY_10000}`);
             // 0.08
             console.log(`StableRateExcessOffset:${await interestRateStrategy.getStableRateExcessOffset()/RAY_10000}`);
-            // 0.05 = 0.04 + 0.01
-            console.log(`BaseStableBorrowRate:${await interestRateStrategy.getBaseStableBorrowRate()/RAY_10000}`);
         });
     });
 });
