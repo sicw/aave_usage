@@ -429,7 +429,7 @@ describe("AAVE", function () {
 
     describe("查看数据", function () {
 
-        it("查看当前利率", async function () {
+        it.skip("查看当前利率", async function () {
             const {pool} = await loadFixture(deployAAVEProtocolFixture);
             const reserveDataStruct:ReserveDataStruct = await pool.getReserveData(AaveV3ArbitrumAssets_USDT_UNDERLYING);
             // 0.0754
@@ -517,7 +517,7 @@ describe("AAVE", function () {
             console.log(`baseRate + Slope1 + Slope2:${await interestRateStrategy.getMaxVariableBorrowRate()}`);
         });
 
-        it("查看稳定利率", async function () {
+        it.skip("查看稳定利率", async function () {
             const {interestRateStrategy} = await loadFixture(deployAAVEProtocolFixture);
             // 0.05 = 0.04 + 0.01 (VarSlope1 + 基本稳定利率增量)
             console.log(`BaseStableBorrowRate:${await interestRateStrategy.getBaseStableBorrowRate()/RAY_10000}`);
@@ -528,5 +528,17 @@ describe("AAVE", function () {
             // 0.08
             console.log(`StableRateExcessOffset:${await interestRateStrategy.getStableRateExcessOffset()/RAY_10000}`);
         });
+
+        it("查看资产备用金", async function () {
+            const {l2pool} = await loadFixture(deployAAVEProtocolFixture);
+            const reserveConfiguration = await l2pool.getConfiguration(AaveV3ArbitrumAssets_USDT_UNDERLYING);
+            // reserveConfiguration & ~0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000FFFFFFFFFFFFFFFF >> 64
+            // 十进制   1645504557321206042155349035971431877456190416601162398078448692331814220
+            // 十六进制  ee6b2800000000000103e8002faf080002160ec003e8ad0629041f401d4c
+            console.log(`reserveConfiguration:${reserveConfiguration}`);
+            // reserveConfiguration & ~0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000FFFFFFFFFFFFFFFF >> 64
+            console.log(`reserveConfiguration:${0x03e8}`); // 10%的准备金 应对用户提款和其他风险
+        });
+
     });
 });
